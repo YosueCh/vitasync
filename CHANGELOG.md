@@ -6,6 +6,18 @@ y versionado con [SemVer](https://semver.org/lang/es/) (`MAYOR.MENOR.PARCHE`):
 - **MENOR**: funciones nuevas que no rompen lo existente.
 - **PARCHE**: correcciones de bugs.
 
+## [1.0.1] — Pruebas automatizadas
+
+### Corregido
+- El único test del frontend era el que trae Angular por defecto sin
+  modificar (buscaba el texto "Hello, vitasync-web", que ya no existe) —
+  se reemplazó por pruebas reales del shell de la app.
+
+### Agregado
+- El backend no tenía ninguna prueba automatizada — se agregó
+  `SmartwatchServiceTest`, incluyendo una prueba de regresión para el bug
+  de "Sincronizar con body vacío guardaba ceros".
+
 ## [1.0.0] — Versión estable de entrega
 
 Primera versión completa de VitaSync: las tres piezas (web, backend, reloj)
