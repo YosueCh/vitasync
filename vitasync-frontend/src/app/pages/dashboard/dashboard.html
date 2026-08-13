@@ -1,0 +1,71 @@
+<section class="section--dark page-hero">
+  <div class="container">
+    <span class="eyebrow"><span class="dot"></span> Dashboard híbrido</span>
+    <h1>Control de tareas, con estadísticas en Flutter Web</h1>
+    <p class="page-hero__lead">
+      El panel de la izquierda es Angular puro. El de la derecha es un
+      micro-frontend compilado en Flutter (<code>StatsWidget</code>) e
+      incrustado por <code>&lt;iframe&gt;</code>.
+    </p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container grid-2 dashboard-grid">
+
+    <div class="card">
+      <h2 style="font-size:20px;">Control de tareas (host Angular)</h2>
+
+      <div class="dashboard-contador">
+        <div class="dashboard-contador__item">
+          <span class="mono-stat">{{ pendientes }}</span>
+          <small>Pendientes</small>
+        </div>
+        <div class="dashboard-contador__item">
+          <span class="mono-stat">{{ enProgreso }}</span>
+          <small>En progreso</small>
+        </div>
+        <div class="dashboard-contador__item">
+          <span class="mono-stat">{{ completadas }}</span>
+          <small>Completadas</small>
+        </div>
+      </div>
+
+      <div class="dashboard-acciones">
+        <button type="button" class="btn btn-primary" (click)="agregarTarea()">
+          Agregar tarea
+        </button>
+        <button type="button" class="btn btn-ghost" (click)="iniciarTarea()">
+          Iniciar tarea
+        </button>
+        <button type="button" class="btn btn-ghost" (click)="completarTarea()">
+          Completar tarea
+        </button>
+      </div>
+
+      <p class="dashboard-nota">
+        Cada clic actualiza el estado aquí y regenera la URL del
+        <code>&lt;iframe&gt;</code> de la derecha con los nuevos valores
+        (<code>?pending=…&amp;progress=…&amp;completed=…</code>).
+      </p>
+
+      <a routerLink="/dispositivo" class="dashboard-link-config">
+        ⌚ Configurar smartwatch →
+      </a>
+      <a routerLink="/smart-tv" class="dashboard-link-config">
+        📺 Enlazar Smart TV →
+      </a>
+    </div>
+
+    <div class="card dashboard-widget-card">
+      <h2 style="font-size:20px;">Estadísticas (Flutter Web)</h2>
+      <iframe
+        title="VitaSync Stats Widget (Flutter Web)"
+        class="dashboard-iframe"
+        [src]="flutterStatsUrl"
+        loading="lazy">
+      </iframe>
+    </div>
+
+  </div>
+</section>

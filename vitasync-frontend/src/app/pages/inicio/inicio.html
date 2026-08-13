@@ -1,0 +1,120 @@
+<!-- ===================== HERO ===================== -->
+<section class="hero section--dark">
+  <div class="container hero__grid">
+    <div class="hero__copy">
+      <span class="eyebrow"><span class="dot"></span> Salud conectada en tiempo real</span>
+      <h1 class="hero__title">Tu reloj, tu cuerpo, tu progreso.<br>Todo en un solo lugar.</h1>
+      <p class="hero__lead">
+        VitaSync conecta tu smartwatch con un dashboard claro y accionable:
+        pasos, sueño, calorías y frecuencia cardiaca, sincronizados en
+        segundos para que tomes mejores decisiones cada día.
+      </p>
+      <div class="hero__ctas">
+        <a routerLink="/contacto" class="btn btn-primary">Solicitar una demo</a>
+        <a routerLink="/" fragment="caracteristicas" class="btn btn-ghost">Ver características</a>
+      </div>
+    </div>
+
+    <!-- Elemento distintivo: "bisel" que imita la esfera del wearable -->
+    <div class="hero__watch" aria-hidden="true">
+      <div class="watch-bezel">
+        <div class="watch-ring"></div>
+        <div class="watch-chip watch-chip--top">🔥 612 kcal</div>
+        <div class="watch-center">
+          <span class="mono-stat watch-pasos" #pasosEl>0</span>
+          <span class="watch-meta">/ {{ metaPasos | number }} pasos</span>
+          <span class="watch-sync">● Sincronizado</span>
+        </div>
+        <div class="watch-chip watch-chip--bottom">😴 7.4 h sueño</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== CARACTERÍSTICAS (#7 imágenes/iconos + #6 textos persuasivos) ===================== -->
+<section id="caracteristicas" class="section">
+  <div class="container">
+    <span class="eyebrow"><span class="dot"></span> Lo que mide tu VitaSync</span>
+    <h2 class="section-title">Cuatro señales, una sola historia de tu salud</h2>
+    <p class="section-lead">
+      Cada lectura de tu wearable se traduce en un panel simple: nada de
+      tablas confusas, solo lo que necesitas saber para avanzar hoy.
+    </p>
+
+    <div class="grid-4" style="margin-top:40px;">
+      <article class="card feature-card">
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#14B88A" stroke-width="2"><path d="M9 5a2 2 0 1 1 0 4 2 2 0 0 1 0-4z"/><path d="M7 12c0 2 1 3 2 5 1-1 1-3 3-3"/><path d="M15 14a2 2 0 1 1 0 4 2 2 0 0 1 0-4z"/><path d="M13 21c0-2-1-3-2-5"/></svg>
+        <h3>Pasos</h3>
+        <p>Convierte cada caminata en una meta visible, sin esfuerzo de registrar nada a mano.</p>
+      </article>
+      <article class="card feature-card">
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#FF6B6B" stroke-width="2"><path d="M12 3c1.5 2.5-1 3.5-1 6 0 1.7 1.3 3 3 3s3-1.3 3-3c2.5 2 3 5 3 7a6 6 0 1 1-12 0c0-3.5 2-5.5 4-13z"/></svg>
+        <h3>Calorías</h3>
+        <p>Sigue tu gasto energético diario y entiende cómo responde tu cuerpo a cada rutina.</p>
+      </article>
+      <article class="card feature-card">
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#0B6E76" stroke-width="2"><path d="M20 14.5A8 8 0 1 1 9.5 4a6 6 0 0 0 10.5 10.5z"/></svg>
+        <h3>Sueño</h3>
+        <p>Descubre patrones reales de descanso y recibe recordatorios para dormir mejor.</p>
+      </article>
+      <article class="card feature-card">
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#14B88A" stroke-width="2"><path d="M3 12h3l2.5-7 4 13 2.5-8H21"/></svg>
+        <h3>Frecuencia cardiaca</h3>
+        <p>Monitorea tu ritmo en reposo y durante el ejercicio, en una sola vista clara.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== ESTADÍSTICAS (#14 Herramientas para estadísticas) ===================== -->
+<section id="estadisticas" class="section section--card">
+  <div class="container">
+    <span class="eyebrow"><span class="dot"></span> Resultados que se notan</span>
+    <h2 class="section-title">Miles de personas ya sincronizaron su rutina</h2>
+
+    <div class="kpi-row">
+      <div class="kpi"><span class="mono-stat kpi__num">12,400+</span><span class="kpi__label">Usuarios activos</span></div>
+      <div class="kpi"><span class="mono-stat kpi__num">3.2M</span><span class="kpi__label">Pasos registrados / semana</span></div>
+      <div class="kpi"><span class="mono-stat kpi__num">87%</span><span class="kpi__label">Adherencia a metas diarias</span></div>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-card__head">
+        <h3>Usuarios activos por mes</h3>
+        <span class="mono-stat chart-card__delta">+18% vs. semestre anterior</span>
+      </div>
+      <div class="bar-chart">
+        <div class="bar-chart__col"><div class="bar-chart__bar" style="height:38%"></div><span>Ene</span></div>
+        <div class="bar-chart__col"><div class="bar-chart__bar" style="height:48%"></div><span>Feb</span></div>
+        <div class="bar-chart__col"><div class="bar-chart__bar" style="height:56%"></div><span>Mar</span></div>
+        <div class="bar-chart__col"><div class="bar-chart__bar" style="height:66%"></div><span>Abr</span></div>
+        <div class="bar-chart__col"><div class="bar-chart__bar" style="height:82%"></div><span>May</span></div>
+        <div class="bar-chart__col"><div class="bar-chart__bar bar-chart__bar--peak" style="height:100%"></div><span>Jun</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== TESTIMONIO (#6 texto persuasivo) ===================== -->
+<section class="section--tight">
+  <div class="container testimonial">
+    <blockquote>
+      “Desde que uso VitaSync entiendo mi cuerpo mejor que con cualquier
+      otra app que probé antes. Ver mis señales en un solo lugar cambió
+      cómo organizo mis días.”
+    </blockquote>
+    <span class="testimonial__author">— Renata G., usuaria desde 2025</span>
+  </div>
+</section>
+
+<!-- ===================== CTA FINAL (#11) ===================== -->
+<section class="section--dark cta-final">
+  <div class="container cta-final__inner">
+    <h2>¿Lista para sincronizar tu salud?</h2>
+    <p>Agenda una demo de 15 minutos y descubre cómo VitaSync se conecta con tu wearable.</p>
+    <div class="hero__ctas">
+      <a routerLink="/contacto" class="btn btn-primary">Solicitar una demo</a>
+      <a routerLink="/faq" class="btn btn-ghost">Ver preguntas frecuentes</a>
+    </div>
+  </div>
+</section>

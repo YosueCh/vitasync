@@ -1,0 +1,43 @@
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(10, 31, 28, 0.55);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 200; padding: 20px;
+  animation: aparecer .25s ease;
+}
+@keyframes aparecer { from { opacity: 0; } to { opacity: 1; } }
+
+.modal-card {
+  background: #fff; border-radius: 20px; padding: 32px 30px;
+  max-width: 380px; width: 100%; position: relative;
+  box-shadow: 0 30px 60px rgba(0,0,0,0.3);
+  animation: subir .3s ease;
+}
+@keyframes subir { from { transform: translateY(14px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+.modal-card__close {
+  position: absolute; top: 14px; right: 14px;
+  width: 28px; height: 28px; border-radius: 50%; border: none;
+  background: var(--paper); color: var(--text-soft); font-size: 12px;
+}
+.modal-card__close:hover { background: var(--mist); }
+
+.modal-card__icon { font-size: 30px; }
+.modal-card h3 { font-size: 19px; margin-top: 10px; }
+.modal-card p { font-size: 13.5px; margin-top: 8px; }
+
+.modal-card__form { display: flex; flex-direction: column; gap: 10px; margin-top: 18px; }
+.modal-card__form input {
+  font-family: var(--font-body); font-size: 14px; padding: 11px 13px;
+  border: 1.5px solid var(--mist); border-radius: var(--radius-sm);
+}
+.modal-card__form input:focus { outline: none; border-color: var(--pulse); }
+.modal-card__form .btn { width: 100%; }
+
+.modal-card__link {
+  display: block; text-align: center; margin-top: 14px;
+  font-size: 12.5px; color: var(--teal); font-weight: 600;
+}
+
+.modal-card__exito {
+  text-align: center; padding: 20px 0 6px; font-size: 14.5px; color: var(--pulse-dark);
+}

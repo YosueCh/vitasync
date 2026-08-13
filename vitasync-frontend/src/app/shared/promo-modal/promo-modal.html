@@ -1,0 +1,31 @@
+<div class="modal-overlay" *ngIf="abierto()" (click)="cerrar()">
+  <div class="modal-card" (click)="$event.stopPropagation()">
+    <button type="button" class="modal-card__close" (click)="cerrar()" aria-label="Cerrar">✕</button>
+
+    <div *ngIf="!enviado()">
+      <span class="modal-card__icon">⌚</span>
+      <h3>¿Quieres ver VitaSync en acción?</h3>
+      <p>Déjanos tu correo y te mandamos acceso anticipado, o agenda una
+        demo en vivo de 15 minutos con el equipo.</p>
+
+      <form class="modal-card__form" (ngSubmit)="enviarCorreo()">
+        <input
+          type="email"
+          name="correo"
+          [(ngModel)]="correo"
+          placeholder="tucorreo@ejemplo.com"
+          required
+        />
+        <button type="submit" class="btn btn-primary">Enviarme acceso</button>
+      </form>
+
+      <a routerLink="/contacto" (click)="cerrar()" class="modal-card__link">
+        O prefiero agendar una demo →
+      </a>
+    </div>
+
+    <div *ngIf="enviado()" class="modal-card__exito">
+      ✅ ¡Listo! Te escribiremos pronto a <strong>{{ correo }}</strong>.
+    </div>
+  </div>
+</div>

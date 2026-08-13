@@ -1,0 +1,97 @@
+<section class="section--dark page-hero">
+  <div class="container">
+    <span class="eyebrow"><span class="dot"></span> Administración</span>
+    <h1>Gestión de Usuarios</h1>
+    <p class="page-hero__lead">
+      Crea, habilita/deshabilita y elimina cuentas de VitaSync — administración
+      real de usuarios, con cada acción reflejada al instante.
+    </p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container gu-grid">
+
+    <!-- Formulario de creación -->
+    <div class="card">
+      <h2 style="font-size:18px;">Nuevo usuario</h2>
+      <form [formGroup]="formulario" (ngSubmit)="crear()" class="form" novalidate>
+        <label class="form__field">
+          <span>Nombre completo</span>
+          <input type="text" formControlName="nombreCompleto" placeholder="Ej. Ana Torres" />
+          <small *ngIf="tieneError('nombreCompleto')" class="form__error">Escribe el nombre completo.</small>
+        </label>
+
+        <label class="form__field">
+          <span>Usuario</span>
+          <input type="text" formControlName="username" placeholder="Ej. atorres" />
+          <small *ngIf="tieneError('username')" class="form__error">Solo letras, números, punto, guion o guion bajo.</small>
+        </label>
+
+        <label class="form__field">
+          <span>Grupo</span>
+          <select formControlName="grupo">
+            <option value="alumnos">alumnos</option>
+            <option value="invitados">invitados</option>
+            <option value="staff">staff</option>
+          </select>
+        </label>
+
+        <button type="submit" class="btn btn-primary">Crear usuario</button>
+      </form>
+
+      <p class="gu-nota">
+        Toda cuenta nueva nace <strong>habilitada</strong> y con
+        <strong>requiere cambio de contraseña</strong> activo.
+      </p>
+    </div>
+
+    <!-- Tabla de usuarios -->
+    <div class="card gu-tabla-card">
+      <h2 style="font-size:18px;">Cuentas existentes</h2>
+
+      <p *ngIf="cargando" class="gu-cargando">Cargando…</p>
+
+      <div class="gu-tabla-wrap" *ngIf="!cargando">
+        <table class="gu-tabla" *ngIf="usuarios.length; else vacio">
+          <thead>
+            <tr>
+              <th>Usuario</th>
+              <th>Nombre</th>
+              <th>Grupos</th>
+              <th>Estado</th>
+              <th>Cambio contraseña</th>
+              <th>Último inicio</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let u of usuarios">
+              <td class="mono-stat">{{ u.username }}</td>
+              <td>{{ u.nombreCompleto }}</td>
+              <td>{{ u.grupos.join(', ') }}</td>
+              <td>
+                <span class="badge" [class.badge--verde]="u.habilitado" [class.badge--gris]="!u.habilitado">
+                  {{ u.habilitado ? 'Habilitado' : 'Deshabilitado' }}
+                </span>
+              </td>
+              <td>{{ u.requiereCambioPassword ? 'Sí' : 'No' }}</td>
+              <td>{{ u.ultimoInicioSesion ? (u.ultimoInicioSesion | date:'short') : 'Nunca' }}</td>
+              <td class="gu-acciones">
+                <button type="button" class="btn-mini" (click)="probarLogin(u)">Probar login</button>
+                <button type="button" class="btn-mini" (click)="toggleHabilitado(u)">
+                  {{ u.habilitado ? 'Deshabilitar' : 'Habilitar' }}
+                </button>
+                <button type="button" class="btn-mini btn-mini--peligro" (click)="eliminar(u)">Eliminar</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <ng-template #vacio>
+          <p class="gu-cargando">No hay usuarios todavía.</p>
+        </ng-template>
+      </div>
+    </div>
+
+  </div>
+</section>

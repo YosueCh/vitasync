@@ -1,0 +1,59 @@
+<div class="tv-pantalla" [class.tv-pantalla--emparejado]="emparejado">
+
+  <!-- ====== Formulario de emparejamiento ====== -->
+  <div *ngIf="!emparejado" class="tv-form">
+    <span class="tv-form__icono">📺</span>
+    <h1>VitaSync en tu Smart TV</h1>
+    <p>Ingresa el código de 6 dígitos que aparece en tu dashboard.</p>
+
+    <input
+      type="text"
+      inputmode="numeric"
+      maxlength="6"
+      [(ngModel)]="codigo"
+      placeholder="000000"
+      class="tv-form__input"
+      (keyup.enter)="conectar()"
+    />
+
+    <button type="button" class="btn btn-primary" (click)="conectar()" [disabled]="cargando">
+      {{ cargando ? 'Conectando…' : 'Conectar' }}
+    </button>
+
+    <p *ngIf="error" class="form__error">{{ error }}</p>
+  </div>
+
+  <!-- ====== Espejo del dashboard, estilo "10-foot UI" ====== -->
+  <div *ngIf="emparejado" class="tv-mirror">
+    <div class="tv-mirror__header">
+      <span class="tv-mirror__logo">⌚ VitaSync</span>
+      <span class="tv-mirror__estado">● En vivo</span>
+    </div>
+
+    <div class="tv-mirror__grid">
+      <div class="tv-tile">
+        <span class="tv-tile__icono">🚶</span>
+        <p class="tv-tile__valor mono-stat">8,450</p>
+        <p class="tv-tile__label">pasos</p>
+      </div>
+      <div class="tv-tile">
+        <span class="tv-tile__icono">🔥</span>
+        <p class="tv-tile__valor mono-stat">612</p>
+        <p class="tv-tile__label">kcal</p>
+      </div>
+      <div class="tv-tile">
+        <span class="tv-tile__icono">🌙</span>
+        <p class="tv-tile__valor mono-stat">7.4</p>
+        <p class="tv-tile__label">h sueño</p>
+      </div>
+      <div class="tv-tile">
+        <span class="tv-tile__icono">❤️</span>
+        <p class="tv-tile__valor mono-stat">78</p>
+        <p class="tv-tile__label">bpm</p>
+      </div>
+    </div>
+
+    <p class="tv-mirror__pie">Reflejado desde tu dashboard de VitaSync</p>
+  </div>
+
+</div>

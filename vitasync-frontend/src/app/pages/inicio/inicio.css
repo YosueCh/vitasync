@@ -1,0 +1,84 @@
+/* ---- Hero ---- */
+.hero { padding: 76px 0 96px; overflow: hidden; }
+.hero__grid {
+  display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 50px; align-items: center;
+}
+.hero__title { font-size: clamp(32px, 4.4vw, 48px); margin-top: 16px; letter-spacing: -0.01em; }
+.hero__lead { margin-top: 18px; max-width: 480px; font-size: 16.5px; }
+.hero__ctas { display: flex; gap: 14px; margin-top: 30px; flex-wrap: wrap; }
+
+/* ---- Bisel del reloj (elemento distintivo / signature) ---- */
+.hero__watch { display: flex; justify-content: center; }
+.watch-bezel {
+  position: relative; width: 300px; height: 300px; border-radius: 50%;
+  background: radial-gradient(circle at 50% 38%, #123a33, #051210);
+  box-shadow: 0 0 0 9px #03100D, 0 30px 60px rgba(0,0,0,0.45);
+  display: flex; align-items: center; justify-content: center;
+}
+.watch-ring {
+  position: absolute; width: 226px; height: 226px; border-radius: 50%;
+  background: conic-gradient(var(--pulse) 0deg 304deg, rgba(255,255,255,0.08) 304deg 360deg);
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 13px), #000 calc(100% - 13px));
+          mask: radial-gradient(farthest-side, transparent calc(100% - 13px), #000 calc(100% - 13px));
+  animation: revelar-anillo 1.1s ease-out;
+}
+@keyframes revelar-anillo { from { opacity: 0; transform: scale(0.85); } to { opacity: 1; transform: scale(1); } }
+
+.watch-center { position: relative; z-index: 2; text-align: center; color: #fff; }
+.watch-pasos { display: block; font-size: 34px; }
+.watch-meta { display: block; font-size: 11px; color: #8FB6AD; margin-top: 2px; }
+.watch-sync {
+  display: inline-block; margin-top: 10px; font-size: 10.5px; color: var(--pulse);
+  border: 1px solid rgba(20,184,138,.45); background: rgba(20,184,138,.08);
+  border-radius: 14px; padding: 3px 11px;
+}
+.watch-chip {
+  position: absolute; font-size: 11.5px; color: #E3C9C9; background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,107,107,.35); border-radius: 14px; padding: 4px 12px;
+}
+.watch-chip--top { top: 8px; }
+.watch-chip--bottom { bottom: 8px; }
+
+@media (max-width: 920px) {
+  .hero__grid { grid-template-columns: 1fr; text-align: center; }
+  .hero__lead { margin-inline: auto; }
+  .hero__ctas { justify-content: center; }
+  .hero__watch { margin-top: 10px; }
+}
+
+/* ---- Tarjetas de características ---- */
+.feature-card { display: flex; flex-direction: column; gap: 12px; }
+.feature-card h3 { font-size: 17px; }
+.feature-card p { font-size: 14px; }
+
+/* ---- KPIs ---- */
+.kpi-row {
+  display: flex; gap: 40px; margin: 36px 0 40px; flex-wrap: wrap;
+}
+.kpi { display: flex; flex-direction: column; gap: 4px; }
+.kpi__num { font-size: 30px; color: var(--ink); }
+.kpi__label { font-size: 13px; color: var(--text-soft); }
+
+/* ---- Gráfico de barras (herramienta de estadísticas) ---- */
+.chart-card { background: var(--paper); border: 1px solid var(--mist); border-radius: var(--radius); padding: 26px 30px; }
+.chart-card__head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 22px; flex-wrap: wrap; gap: 8px; }
+.chart-card__head h3 { font-size: 15.5px; }
+.chart-card__delta { color: var(--pulse-dark); font-size: 12.5px; }
+.bar-chart { display: flex; align-items: flex-end; gap: 18px; height: 150px; }
+.bar-chart__col { flex: 1; display: flex; flex-direction: column; align-items: center; height: 100%; justify-content: flex-end; gap: 8px; }
+.bar-chart__bar { width: 100%; max-width: 38px; border-radius: 6px 6px 2px 2px; background: var(--mist); }
+.bar-chart__bar--peak { background: linear-gradient(180deg, var(--pulse), var(--teal)); }
+.bar-chart__col span { font-size: 11.5px; color: var(--text-soft); }
+
+/* ---- Testimonio ---- */
+.testimonial { max-width: 680px; text-align: center; margin: 0 auto; }
+.testimonial blockquote {
+  font-family: var(--font-display); font-size: 21px; color: var(--ink);
+  line-height: 1.45; margin: 0;
+}
+.testimonial__author { display: block; margin-top: 16px; font-size: 13.5px; color: var(--text-soft); }
+
+/* ---- CTA final ---- */
+.cta-final__inner { text-align: center; }
+.cta-final__inner p { margin: 14px auto 0; max-width: 440px; }
+.cta-final .hero__ctas { justify-content: center; }

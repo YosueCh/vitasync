@@ -1,0 +1,10 @@
+<div class="banner" *ngIf="visible()">
+  <div class="banner__inner">
+    <span class="banner__icon">🎉</span>
+    <span class="banner__text">
+      <strong>Novedad:</strong> VitaSync ahora sincroniza con más wearables redondos.
+      <a routerLink="/nosotros">Conoce las novedades →</a>
+    </span>
+    <button type="button" class="banner__close" (click)="cerrar()" aria-label="Cerrar aviso">✕</button>
+  </div>
+</div>

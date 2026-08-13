@@ -1,0 +1,77 @@
+.cfg-pantalla { max-width: 720px; }
+
+/* ----- Selector de usuario activo ----- */
+.selector-usuario {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 18px; font-size: 13.5px; color: var(--text-soft);
+}
+.selector-usuario select {
+  font: inherit; padding: 6px 10px; border-radius: var(--radius-sm);
+  border: 1px solid var(--line); background: var(--paper); color: var(--text);
+}
+
+/* ----- Barra de estado ----- */
+.estado-barra {
+  display: flex; align-items: center; gap: 10px;
+  border-radius: var(--radius-sm); padding: 12px 16px; margin-bottom: 22px;
+  font-size: 13.5px; font-weight: 600;
+}
+.estado--gris  { background: var(--paper); color: var(--text-soft); }
+.estado--azul  { background: rgba(11,110,118,.10); color: var(--teal); }
+.estado--verde { background: rgba(20,184,138,.10); color: var(--pulse-dark); }
+.estado--rojo  { background: rgba(255,107,107,.10); color: var(--coral); }
+
+.punto-estado {
+  width: 9px; height: 9px; border-radius: 50%; background: currentColor; flex: none;
+  box-shadow: 0 0 0 0 currentColor; animation: pulso-estado 1.8s infinite;
+}
+@keyframes pulso-estado {
+  0% { box-shadow: 0 0 0 0 rgba(20,184,138,.4); }
+  70% { box-shadow: 0 0 0 7px rgba(20,184,138,0); }
+  100% { box-shadow: 0 0 0 0 rgba(20,184,138,0); }
+}
+.estado-barra__texto { flex: 1; }
+.spinner {
+  width: 15px; height: 15px; border-radius: 50%;
+  border: 2px solid rgba(0,0,0,.15); border-top-color: currentColor;
+  animation: girar-estado .8s linear infinite;
+}
+@keyframes girar-estado { to { transform: rotate(360deg); } }
+
+/* ----- Acciones ----- */
+.acciones { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 26px; }
+
+/* ----- Tarjeta de dispositivo ----- */
+.tarjeta-dispositivo { margin-bottom: 26px; }
+.tarjeta-dispositivo__fila { display: flex; align-items: center; gap: 16px; }
+.watch-avatar {
+  width: 52px; height: 52px; border-radius: 50%; flex: none;
+  display: flex; align-items: center; justify-content: center; font-size: 22px;
+  background: linear-gradient(135deg, var(--pulse), var(--teal));
+}
+.tarjeta-dispositivo__info { flex: 1; }
+.tarjeta-dispositivo__info h2 { font-size: 16.5px; }
+.tarjeta-dispositivo__info p { font-size: 12.5px; margin-top: 2px; }
+.tarjeta-dispositivo__sync { color: var(--text-soft); font-size: 11.5px !important; }
+.tarjeta-dispositivo__bateria { text-align: center; font-size: 18px; }
+.tarjeta-dispositivo__bateria p { font-size: 13px; font-weight: 700; color: var(--pulse-dark); margin-top: 2px; }
+.bateria--baja p { color: var(--coral); }
+
+/* ----- Panel de métricas ----- */
+.panel-metricas-wrap h2 { font-size: 16px; margin-bottom: 12px; }
+.panel-metricas { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+.metrica-card {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  background: var(--card-bg); border: 1px solid var(--mist); border-radius: var(--radius-sm);
+  padding: 16px 8px; text-align: center;
+}
+.metrica-card__icono { font-size: 20px; }
+.metrica-card__valor { font-size: 17px; font-weight: 700; color: var(--ink); }
+.metrica-card__label { font-size: 11px; color: var(--text-soft); }
+
+@media (max-width: 640px) { .panel-metricas { grid-template-columns: repeat(2, 1fr); } }
+
+/* ----- Vacío ----- */
+.vacio { text-align: center; color: var(--text-soft); padding: 50px 0; }
+.vacio__icono { font-size: 40px; opacity: .5; }
+.vacio p { margin-top: 8px; }

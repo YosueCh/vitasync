@@ -1,0 +1,22 @@
+<header class="navbar">
+  <div class="container navbar__inner">
+    <a routerLink="/" class="navbar__brand"><app-logo></app-logo></a>
+
+    <input type="checkbox" id="nav-toggle" class="navbar__toggle-input" />
+    <label for="nav-toggle" class="navbar__toggle" aria-label="Abrir menú">
+      <span></span><span></span><span></span>
+    </label>
+
+    <nav class="navbar__menu">
+      <a routerLink="/" routerLinkActive="is-active" [routerLinkActiveOptions]="{exact:true}">Inicio</a>
+      <a routerLink="/" fragment="caracteristicas">Características</a>
+      <a routerLink="/" fragment="estadisticas">Estadísticas</a>
+      <a routerLink="/nosotros" routerLinkActive="is-active">Nosotros</a>
+      <a routerLink="/dashboard" routerLinkActive="is-active">Dashboard</a>
+      <a routerLink="/usuarios" routerLinkActive="is-active">Usuarios</a>
+      <a routerLink="/faq" routerLinkActive="is-active">Preguntas frecuentes</a>
+      <app-search-box></app-search-box>
+      <a routerLink="/contacto" class="btn btn-primary navbar__cta">Solicitar demo</a>
+    </nav>
+  </div>
+</header>

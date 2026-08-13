@@ -1,0 +1,50 @@
+<section class="section--dark page-hero">
+  <div class="container">
+    <span class="eyebrow"><span class="dot"></span> Smart TV</span>
+    <h1>Enlazar con Smart TV</h1>
+    <p class="page-hero__lead">
+      Genera un código y ábrelo desde la pantalla de la TV
+      (<code>/smart-tv-pantalla</code>, normalmente en otro dispositivo o
+      pestaña) para reflejar tu dashboard ahí.
+    </p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container stv-wrap">
+    <div class="card stv-card">
+
+      <div *ngIf="!sesion()" class="stv-inicio">
+        <p>Ningún código generado todavía.</p>
+        <button type="button" class="btn btn-primary" (click)="generarCodigo()" [disabled]="cargando()">
+          {{ cargando() ? 'Generando…' : 'Generar código' }}
+        </button>
+      </div>
+
+      <div *ngIf="sesion() as s" class="stv-codigo">
+        <div class="estado-barra" [ngClass]="claseEstado(s.estado)" role="status" aria-live="polite">
+          <span class="punto-estado"></span>
+          <span *ngIf="s.estado === 'ESPERANDO_TV'">Esperando a que la TV ingrese el código…</span>
+          <span *ngIf="s.estado === 'EMPAREJADO'">✅ TV conectada</span>
+          <span *ngIf="s.estado === 'EXPIRADO'">El código expiró</span>
+        </div>
+
+        <p class="stv-codigo__numero mono-stat">{{ s.codigo }}</p>
+        <p class="stv-codigo__ayuda">
+          En la Smart TV, abre <code>/smart-tv-pantalla</code> e ingresa este código.
+        </p>
+
+        <button
+          type="button"
+          class="btn btn-ghost"
+          (click)="generarCodigo()"
+          *ngIf="s.estado !== 'ESPERANDO_TV'"
+        >
+          Generar otro código
+        </button>
+      </div>
+
+      <p *ngIf="error()" class="form__error">{{ error() }}</p>
+    </div>
+  </div>
+</section>

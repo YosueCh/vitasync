@@ -1,0 +1,55 @@
+.search-trigger {
+  width: 38px; height: 38px; border-radius: 50%; border: 1px solid var(--mist);
+  background: #fff; color: var(--teal); display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.search-trigger:hover { border-color: var(--pulse); color: var(--pulse-dark); }
+
+.search-overlay {
+  position: fixed; inset: 0; background: rgba(10,31,28,0.5);
+  display: flex; align-items: flex-start; justify-content: center;
+  padding: 90px 20px; z-index: 300;
+  animation: aparecer .2s ease;
+}
+@keyframes aparecer { from { opacity: 0; } to { opacity: 1; } }
+
+.search-panel {
+  background: #fff; border-radius: 18px; width: 100%; max-width: 580px;
+  box-shadow: 0 30px 70px rgba(0,0,0,.35); overflow: hidden;
+  animation: bajar .2s ease;
+}
+@keyframes bajar { from { transform: translateY(-10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+.search-panel__input {
+  display: flex; align-items: center; gap: 10px; padding: 16px 18px;
+  border-bottom: 1px solid var(--mist); color: var(--text-soft);
+}
+.search-panel__input input {
+  flex: 1; border: none; outline: none; font-size: 15.5px; font-family: var(--font-body); color: var(--text);
+}
+.search-panel__close {
+  width: 26px; height: 26px; border-radius: 50%; border: none; background: var(--paper);
+  color: var(--text-soft); font-size: 11px; flex-shrink: 0;
+}
+
+.search-panel__results { max-height: 380px; overflow-y: auto; padding: 8px; }
+.search-panel__hint { padding: 18px 14px; font-size: 13.5px; color: var(--text-soft); }
+
+.search-result {
+  display: flex; flex-direction: column; gap: 3px; width: 100%; text-align: left;
+  padding: 12px 14px; border-radius: 12px; border: none; background: transparent;
+}
+.search-result:hover { background: var(--paper); }
+.search-result__categoria {
+  font-family: var(--font-mono); font-size: 10.5px; letter-spacing: .06em; text-transform: uppercase;
+  color: var(--pulse-dark);
+}
+.search-result__titulo { font-size: 14.5px; font-weight: 600; color: var(--ink); }
+.search-result__snippet {
+  font-size: 12.5px; color: var(--text-soft);
+  display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden;
+}
+
+@media (max-width: 640px) {
+  .search-overlay { padding: 70px 14px; }
+}

@@ -1,0 +1,9 @@
+{
+    "name": "vitasync_stats_web",
+    "short_name": "VitaSync Stats",
+    "start_url": ".",
+    "display": "standalone",
+    "background_color": "#EFF5F3",
+    "theme_color": "#14B88A",
+    "description": "Widget de estadísticas de productividad de VitaSync (Flutter Web)."
+}

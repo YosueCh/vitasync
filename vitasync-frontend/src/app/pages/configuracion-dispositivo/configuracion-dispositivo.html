@@ -1,0 +1,86 @@
+<section class="section--dark page-hero">
+  <div class="container">
+    <span class="eyebrow"><span class="dot"></span> Configuración</span>
+    <h1>Configuración de Dispositivo</h1>
+    <p class="page-hero__lead">
+      Empareja y sincroniza tu smartwatch VitaSync con el dashboard, con
+      datos reales de extremo a extremo: Angular ↔ Spring Boot ↔ Firestore
+      ↔ Flutter.
+    </p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container cfg-pantalla">
+
+    <!-- ====== SELECTOR DE USUARIO ACTIVO ======
+         Cada cuenta tiene su propio dispositivo/métricas en el backend;
+         esto decide de cuál usuario son los datos que se muestran. -->
+    <label class="selector-usuario" *ngIf="usuarioActivo.usuarioActivo() as activo">
+      <span>Viendo los datos de:</span>
+      <select (change)="cambiarUsuario($any($event.target).value)">
+        <option *ngFor="let u of usuarioActivo.usuarios()" [value]="u.id" [selected]="u.id === activo.id">
+          {{ u.nombreCompleto }} ({{ u.username }})
+        </option>
+      </select>
+    </label>
+
+    <!-- ====== INDICADOR DE ESTADO ======
+         role="status" + aria-live="polite": cualquier cambio de texto se
+         anuncia automáticamente a lectores de pantalla sin interrumpir. -->
+    <div class="estado-barra" [ngClass]="claseEstado()" role="status" aria-live="polite">
+      <span class="punto-estado" [attr.data-estado]="estado()"></span>
+      <span class="estado-barra__texto">{{ mensajeEstado() }}</span>
+      <span *ngIf="estado() === 'SINCRONIZANDO' || estado() === 'CONECTANDO'" class="spinner" aria-hidden="true"></span>
+    </div>
+
+    <!-- ====== BOTONES DE ACCIÓN ====== -->
+    <div class="acciones">
+      <button type="button" class="btn btn-primary" (click)="onConectar()" [disabled]="cargando || estado() === 'CONECTADO'">
+        Conectar Smartwatch
+      </button>
+      <button type="button" class="btn btn-ghost" (click)="onSincronizar()" [disabled]="cargando || estado() !== 'CONECTADO'">
+        Sincronizar
+      </button>
+    </div>
+
+    <!-- ====== TARJETA DE DISPOSITIVO CONECTADO ======
+         *ngIf: Angular añade/elimina el nodo real del DOM (no lo oculta). -->
+    <article *ngIf="dispositivo() as d" class="card tarjeta-dispositivo">
+      <div class="tarjeta-dispositivo__fila">
+        <div class="watch-avatar">⌚</div>
+        <div class="tarjeta-dispositivo__info">
+          <h2>{{ d.nombre }}</h2>
+          <p>{{ d.modelo }} · Firmware {{ d.firmware }}</p>
+          <p class="tarjeta-dispositivo__sync">
+            Última sincronización: {{ d.ultimaSync ? (d.ultimaSync | date:'short') : 'Nunca' }}
+          </p>
+        </div>
+        <div class="tarjeta-dispositivo__bateria" [class.bateria--baja]="d.bateria <= 20">
+          <span>🔋</span>
+          <p>{{ d.bateria }}%</p>
+        </div>
+      </div>
+    </article>
+
+    <!-- ====== PANEL DE MÉTRICAS ======
+         *ngFor: genera dinámicamente un nodo .metrica-card por métrica. -->
+    <section *ngIf="metricas() as m" class="panel-metricas-wrap" aria-labelledby="titulo-metricas">
+      <h2 id="titulo-metricas">Métricas en tiempo real</h2>
+      <div class="panel-metricas">
+        <div class="metrica-card" *ngFor="let item of tarjetasMetricas(m)">
+          <span class="metrica-card__icono" [ngClass]="item.color">{{ item.icono === 'directions_walk' ? '🚶' : item.icono === 'local_fire_department' ? '🔥' : item.icono === 'bedtime' ? '🌙' : '❤️' }}</span>
+          <p class="metrica-card__valor mono-stat">{{ item.valor }}</p>
+          <p class="metrica-card__label">{{ item.etiqueta }}</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Mensaje cuando aún no hay dispositivo -->
+    <div *ngIf="!dispositivo() && !cargando" class="vacio">
+      <span class="vacio__icono">⌚</span>
+      <p>No hay ningún smartwatch conectado.</p>
+    </div>
+
+  </div>
+</section>

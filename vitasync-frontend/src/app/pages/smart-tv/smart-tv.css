@@ -1,0 +1,32 @@
+.stv-wrap { max-width: 520px; }
+.stv-card { text-align: center; }
+
+.stv-inicio { padding: 20px 0; display: flex; flex-direction: column; gap: 16px; align-items: center; }
+.stv-inicio p { color: var(--text-soft); }
+
+.stv-codigo { padding: 10px 0; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.stv-codigo__numero {
+  font-size: 48px; font-weight: 700; letter-spacing: 0.12em; color: var(--ink);
+  margin: 8px 0;
+}
+.stv-codigo__ayuda { color: var(--text-soft); font-size: 13px; }
+.stv-codigo__ayuda code { background: var(--paper); border-radius: 4px; padding: 1px 6px; font-family: var(--font-mono); }
+
+.estado-barra {
+  display: inline-flex; align-items: center; gap: 10px;
+  border-radius: var(--radius-sm); padding: 10px 16px;
+  font-size: 13px; font-weight: 600;
+}
+.estado--azul  { background: rgba(11,110,118,.10); color: var(--teal); }
+.estado--verde { background: rgba(20,184,138,.10); color: var(--pulse-dark); }
+.estado--rojo  { background: rgba(255,107,107,.10); color: var(--coral); }
+
+.punto-estado {
+  width: 9px; height: 9px; border-radius: 50%; background: currentColor;
+  box-shadow: 0 0 0 0 currentColor; animation: pulso-stv 1.8s infinite;
+}
+@keyframes pulso-stv {
+  0% { box-shadow: 0 0 0 0 rgba(20,184,138,.4); }
+  70% { box-shadow: 0 0 0 7px rgba(20,184,138,0); }
+  100% { box-shadow: 0 0 0 0 rgba(20,184,138,0); }
+}

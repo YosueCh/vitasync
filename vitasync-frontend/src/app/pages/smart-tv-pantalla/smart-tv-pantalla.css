@@ -1,0 +1,50 @@
+.tv-pantalla {
+  min-height: 60vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 24px;
+  background: var(--ink);
+}
+
+/* ---- Formulario ---- */
+.tv-form {
+  display: flex; flex-direction: column; align-items: center; gap: 12px;
+  text-align: center; max-width: 360px;
+}
+.tv-form__icono { font-size: 40px; }
+.tv-form h1 { color: #fff; font-size: 22px; }
+.tv-form p { color: #A9C4BD; }
+.tv-form__input {
+  width: 220px; text-align: center; font-size: 28px; letter-spacing: 0.2em;
+  font-family: var(--font-mono); padding: 10px 12px; border-radius: var(--radius-sm);
+  border: 1.5px solid rgba(255,255,255,.2); background: rgba(255,255,255,.06); color: #fff;
+}
+.tv-form__input:focus { outline: none; border-color: var(--pulse); }
+.tv-form .form__error { color: var(--coral); font-size: 13px; }
+
+/* ---- Espejo del dashboard (10-foot UI) ---- */
+.tv-mirror { width: 100%; max-width: 720px; color: #fff; }
+.tv-mirror__header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 28px; font-size: 15px;
+}
+.tv-mirror__logo { font-weight: 700; letter-spacing: 0.02em; }
+.tv-mirror__estado { color: var(--pulse); font-size: 13px; }
+
+.tv-mirror__grid {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px;
+}
+.tv-tile {
+  background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.1);
+  border-radius: 20px; padding: 24px 12px; text-align: center;
+}
+.tv-tile__icono { font-size: 28px; }
+.tv-tile__valor { font-size: 34px; font-weight: 700; margin-top: 8px; }
+.tv-tile__label { color: #A9C4BD; font-size: 13px; margin-top: 2px; }
+
+.tv-mirror__pie { text-align: center; margin-top: 28px; color: #7C978F; font-size: 12.5px; }
+
+@media (max-width: 640px) {
+  .tv-mirror__grid { grid-template-columns: repeat(2, 1fr); }
+}
