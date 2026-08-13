@@ -1,0 +1,33 @@
+# --- Secretos: NUNCA subir credenciales ---
+**/serviceAccountKey.json
+**/google-services.json
+*.keystore
+*.jks
+
+# --- Backend (Maven/Java) ---
+vitasync-backend/target/
+
+# --- Frontend (Angular/Node) ---
+vitasync-frontend/node_modules/
+vitasync-frontend/dist/
+vitasync-frontend/.angular/
+vitasync-frontend/public/flutter_stats/
+
+# --- Flutter (wearable + flutter-stats-widget) ---
+**/build/
+**/.dart_tool/
+**/.flutter-plugins
+**/.flutter-plugins-dependencies
+**/.pub-cache/
+**/.pub/
+**/android/.gradle/
+**/android/app/.cxx/
+**/ios/Pods/
+**/ios/.symlinks/
+
+# --- IDE / SO ---
+.idea/
+*.iml
+.vscode/
+.DS_Store
+Thumbs.db
