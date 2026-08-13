@@ -1,0 +1,17 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: vitasync-backend
+  elasticsearch:
+    uris: http://localhost:9200
+
+logging:
+  level:
+    com.vitasync.backend: INFO
+
+# Origen permitido para las peticiones del frontend Angular (ng serve).
+vitasync:
+  cors:
+    allowed-origin: http://localhost:4200

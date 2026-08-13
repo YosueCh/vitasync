@@ -1,0 +1,13 @@
+target/
+.mvn/
+!.mvn/wrapper/maven-wrapper.properties
+.idea/
+*.iml
+.vscode/
+
+# Credenciales de Firebase: NUNCA se sube al repositorio.
+src/main/resources/serviceAccountKey.json
+*.keystore
+
+# Datos locales de Elasticsearch si se montan como bind mount en vez de volume
+esdata/
