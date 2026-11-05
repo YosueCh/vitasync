@@ -1,0 +1,14 @@
+name: vitasync_firmware_sim
+description: "Simulador del firmware del reloj VitaSync (Practica 1: setup/loop, LED, boton, sensor)."
+publish_to: 'none'
+version: 1.0.0
+
+environment:
+  sdk: ^3.9.2
+
+dependencies:
+  http: ^1.6.0
+
+dev_dependencies:
+  lints: ^6.0.0
+  test: ^1.25.0
