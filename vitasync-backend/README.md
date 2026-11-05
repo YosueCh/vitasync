@@ -148,7 +148,7 @@ src/main/java/com/vitasync/backend/
 
 ## Seguridad: control de acceso (Práctica 10)
 
-Con `vitasync.seguridad.activa: true` (`application.yml`) el backend exige identidad:
+El backend **arranca con la seguridad encendida** (`vitasync.seguridad.activa: true` en `application.yml`; sin la propiedad también cuenta como encendida) y exige identidad:
 
 | Qué | Cómo |
 |---|---|
@@ -159,7 +159,9 @@ Con `vitasync.seguridad.activa: true` (`application.yml`) el backend exige ident
 | Públicos | `GET /api/firmware/ultima`, búsqueda y Smart TV |
 
 Con el emulador de Authentication, arranca el backend con la variable `FIREBASE_AUTH_EMULATOR_HOST=localhost:9099`.
-La app móvil se activa por su lado con `--dart-define=SEGURIDAD=true` (ver su README); deben coincidir.
+La app móvil y el sitio Angular piden correo y contraseña por omisión (ver sus README). Para probar sin Firebase se apaga con `--vitasync.seguridad.activa=false` (o la variable `VITASYNC_SEGURIDAD_ACTIVA=false`) y la app con `--dart-define=SEGURIDAD=false`; deben coincidir. Con la seguridad encendida y sin `serviceAccountKey.json`, todo responde 401 porque no hay con qué verificar tokens.
+
+El 401 y el 403 los emite el filtro antes de llegar a Spring MVC, así que CORS también corre como filtro previo (`CorsConfig`): sin eso el navegador los vería como un error de red y el sitio no sabría que la sesión venció.
 
 **Prueba de punta a punta** (sin tocar el Firebase real: repositorios en memoria):
 

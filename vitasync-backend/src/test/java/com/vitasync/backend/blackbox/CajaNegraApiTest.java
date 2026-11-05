@@ -38,7 +38,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
  * {@code target/caja-negra/evidencia-api.txt} y el resumen en
  * {@code resultados-api.tsv}.
  */
-@SpringBootTest(classes = ServidorPruebas.class)
+// Estas pruebas de caja negra son sin sesión (como la Práctica 8); la seguridad se prueba aparte con tokens.
+@SpringBootTest(classes = ServidorPruebas.class, properties = "vitasync.seguridad.activa=false")
 @AutoConfigureMockMvc
 @TestMethodOrder(MethodOrderer.MethodName.class)
 class CajaNegraApiTest {

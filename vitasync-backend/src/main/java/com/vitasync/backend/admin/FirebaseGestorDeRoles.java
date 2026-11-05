@@ -16,7 +16,7 @@ import java.util.Optional;
 
 /** Roles guardados como claim «rol» de Firebase Authentication. Solo existe con la seguridad activa. */
 @Component
-@ConditionalOnProperty(name = "vitasync.seguridad.activa", havingValue = "true")
+@ConditionalOnProperty(name = "vitasync.seguridad.activa", havingValue = "true", matchIfMissing = true)
 public class FirebaseGestorDeRoles implements GestorDeRoles {
 
     @Override

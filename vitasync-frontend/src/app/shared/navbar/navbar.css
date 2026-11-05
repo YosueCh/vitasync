@@ -15,6 +15,11 @@
 .navbar__menu a { padding: 6px 0; border-bottom: 2px solid transparent; }
 .navbar__menu a:hover { color: var(--teal); }
 .navbar__menu a.is-active { color: var(--pulse-dark); border-color: var(--pulse); font-weight: 600; }
+#navbar-entrar, .navbar__sesion { white-space: nowrap; }
+.navbar__sesion {
+  background: none; border: 0; padding: 6px 0; font: inherit; font-weight: 500; color: var(--text); cursor: pointer;
+}
+.navbar__sesion:hover { color: var(--teal); }
 .navbar__cta.btn { padding: 10px 20px; border-bottom: none !important; }
 
 .navbar__toggle-input { display: none; }

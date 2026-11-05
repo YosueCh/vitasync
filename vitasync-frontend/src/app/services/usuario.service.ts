@@ -4,6 +4,7 @@ import { Observable, of } from 'rxjs';
 import { delay } from 'rxjs/operators';
 
 import { CrearUsuario, LoginResultado, Usuario } from '../models/usuario.model';
+import { AUTH_CONFIG } from '../core/auth.config';
 
 /**
  * Administración de cuentas de usuario (Práctica 13, reinterpretada como
@@ -19,7 +20,7 @@ import { CrearUsuario, LoginResultado, Usuario } from '../models/usuario.model';
 @Injectable({ providedIn: 'root' })
 export class UsuarioService {
   private readonly SIMULAR = false;
-  private readonly API = 'http://localhost:8081/api/usuarios';
+  private readonly API = `${AUTH_CONFIG.api}/usuarios`;
 
   /** Semilla igual a la que usa el backend (UsuarioSeeder), para que la demo sin backend luzca igual. */
   private usuarios: Usuario[] = [

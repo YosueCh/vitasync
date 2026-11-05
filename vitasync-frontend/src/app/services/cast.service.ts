@@ -4,6 +4,7 @@ import { Observable, of } from 'rxjs';
 import { delay } from 'rxjs/operators';
 
 import { CastSession } from '../models/cast.model';
+import { AUTH_CONFIG } from '../core/auth.config';
 
 const LOCALSTORAGE_KEY = 'vitasync_cast_sessions';
 const VIGENCIA_MIN = 5;
@@ -24,7 +25,7 @@ const VIGENCIA_MIN = 5;
 @Injectable({ providedIn: 'root' })
 export class CastService {
   private readonly SIMULAR = false;
-  private readonly API = 'http://localhost:8081/api/cast';
+  private readonly API = `${AUTH_CONFIG.api}/cast`;
 
   constructor(private http: HttpClient) {}
 

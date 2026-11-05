@@ -49,6 +49,26 @@ jobs:
           dart pub get
           dart test
 
+  web:
+    name: Sitio web (Angular, ng test y build)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: vitasync-frontend/package-lock.json
+      - name: Instalar dependencias
+        working-directory: vitasync-frontend
+        run: npm ci
+      - name: Pruebas del sitio (inicio de sesión, interceptor y guardia)
+        working-directory: vitasync-frontend
+        run: npx ng test --watch=false
+      - name: Compilación de producción
+        working-directory: vitasync-frontend
+        run: npx ng build
+
   app:
     name: App móvil (flutter analyze y test)
     runs-on: ubuntu-latest

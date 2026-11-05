@@ -8,7 +8,21 @@ y versionado con [SemVer](https://semver.org/lang/es/) (`MAYOR.MENOR.PARCHE`):
 
 ## [Sin publicar] — Desarrollo Móvil Integral: vista móvil e integración de prácticas
 
+### Cambiado
+- La seguridad (Práctica 10) está **encendida por omisión** en el servidor (`vitasync.seguridad.activa: true`),
+  en la app móvil (`SEGURIDAD` por omisión `true`) y en el sitio Angular. Se apaga con
+  `--vitasync.seguridad.activa=false` y `--dart-define=SEGURIDAD=false`.
+
 ### Añadido
+- Sitio Angular: pantalla «Iniciar sesión» (Firebase Authentication por REST), interceptor que manda el token solo
+  al backend, guardia en dashboard, dispositivo y usuarios, y botón de cerrar sesión. La dirección del backend y de
+  Authentication sale de un solo lugar (`core/auth.config.ts`) y se puede cambiar sin recompilar. 15 pruebas nuevas
+  de Angular y un recorrido en un navegador real (capturas en `vitasync-frontend/evidencias-web/`).
+- CI: trabajo «Sitio web» con las pruebas y la compilación de Angular.
+
+### Corregido
+- El 401 y el 403 del control de acceso no llevaban cabeceras CORS: el navegador los veía como error de red y el
+  sitio web no podía saber que la sesión venció. CORS ahora corre también como filtro previo (4 pruebas).
 - `FirestoreRealTest`: los repositorios probados contra el Firestore real del proyecto (cascada de borrado con
   subcolecciones, persistencia con un cliente nuevo, transacciones de metas e invitaciones). No corre con
   `mvn test`: se activa con `-Dfirestore.real=true`. La variable del emulador de Authentication de las pruebas

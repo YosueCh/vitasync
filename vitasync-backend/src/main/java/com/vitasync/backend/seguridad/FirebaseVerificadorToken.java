@@ -14,7 +14,7 @@ import java.util.Optional;
  * Solo existe con vitasync.seguridad.activa=true.
  */
 @Component
-@ConditionalOnProperty(name = "vitasync.seguridad.activa", havingValue = "true")
+@ConditionalOnProperty(name = "vitasync.seguridad.activa", havingValue = "true", matchIfMissing = true)
 public class FirebaseVerificadorToken implements VerificadorToken {
 
     @Override

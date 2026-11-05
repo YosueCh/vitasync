@@ -8,6 +8,8 @@ import { ConfiguracionDispositivo } from './pages/configuracion-dispositivo/conf
 import { GestionUsuarios } from './pages/gestion-usuarios/gestion-usuarios';
 import { SmartTv } from './pages/smart-tv/smart-tv';
 import { SmartTvPantalla } from './pages/smart-tv-pantalla/smart-tv-pantalla';
+import { Acceso } from './pages/acceso/acceso';
+import { authGuard } from './core/auth.interceptor';
 
 /**
  * Rutas del sitio (elemento #3 "Páginas internas" y #13 "Páginas
@@ -17,9 +19,11 @@ import { SmartTvPantalla } from './pages/smart-tv-pantalla/smart-tv-pantalla';
 export const routes: Routes = [
   { path: '', component: Inicio, title: 'VitaSync — Tu salud, sincronizada' },
   { path: 'nosotros', component: Nosotros, title: 'VitaSync — Nosotros' },
-  { path: 'dashboard', component: Dashboard, title: 'VitaSync — Dashboard' },
-  { path: 'dispositivo', component: ConfiguracionDispositivo, title: 'VitaSync — Configuración de Dispositivo' },
-  { path: 'usuarios', component: GestionUsuarios, title: 'VitaSync — Gestión de Usuarios' },
+  { path: 'acceso', component: Acceso, title: 'VitaSync — Iniciar sesión' },
+  // Las páginas con datos de la persona exigen sesión (Práctica 10); el backend vuelve a comprobarlo.
+  { path: 'dashboard', component: Dashboard, title: 'VitaSync — Dashboard', canActivate: [authGuard] },
+  { path: 'dispositivo', component: ConfiguracionDispositivo, title: 'VitaSync — Configuración de Dispositivo', canActivate: [authGuard] },
+  { path: 'usuarios', component: GestionUsuarios, title: 'VitaSync — Gestión de Usuarios', canActivate: [authGuard] },
   { path: 'smart-tv', component: SmartTv, title: 'VitaSync — Enlazar Smart TV' },
   { path: 'smart-tv-pantalla', component: SmartTvPantalla, title: 'VitaSync — Pantalla de TV' },
   { path: 'contacto', component: Contacto, title: 'VitaSync — Contacto' },

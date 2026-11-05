@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { Document } from 'flexsearch';
 import { INDICE_BUSQUEDA, DocumentoBuscable } from '../core/search-index';
+import { AUTH_CONFIG } from '../core/auth.config';
 
 export interface ResultadoBusqueda {
   id: string;
@@ -32,7 +33,7 @@ export interface ResultadoBusqueda {
 export class SearchService {
   /** true = busca en el índice local (FlexSearch); false = busca en /api/search (Elasticsearch real). */
   private readonly MODO_LOCAL = false;
-  private readonly API = 'http://localhost:8081/api/search';
+  private readonly API = `${AUTH_CONFIG.api}/search`;
 
   /** Índice FlexSearch construido una sola vez al iniciar el servicio. */
   private indice = new Document<any, false, false>({

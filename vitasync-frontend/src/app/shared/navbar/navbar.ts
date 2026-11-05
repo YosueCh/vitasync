@@ -1,5 +1,6 @@
-import { Component } from '@angular/core';
-import { RouterLink, RouterLinkActive } from '@angular/router';
+import { Component, inject } from '@angular/core';
+import { Router, RouterLink, RouterLinkActive } from '@angular/router';
+import { AuthService } from '../../core/auth.service';
 import { Logo } from '../logo/logo';
 import { SearchBox } from '../search-box/search-box';
 
@@ -16,4 +17,13 @@ import { SearchBox } from '../search-box/search-box';
   templateUrl: './navbar.html',
   styleUrl: './navbar.css',
 })
-export class Navbar {}
+export class Navbar {
+  private readonly auth = inject(AuthService);
+  private readonly router = inject(Router);
+  readonly sesion = this.auth.sesion;
+
+  salir(): void {
+    this.auth.cerrarSesion();
+    void this.router.navigateByUrl('/');
+  }
+}

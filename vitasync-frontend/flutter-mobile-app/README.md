@@ -142,11 +142,12 @@ Copy-Item -Recurse -Force build\web\* ..\public\movil\
 
 ## Con la seguridad activa (Práctica 10)
 
-Por omisión la app entra como siempre (elegir cuenta y PIN). Con el backend en `vitasync.seguridad.activa: true`
-hay que activarla también aquí:
+Por omisión la app **pide correo y contraseña** (el backend arranca con la seguridad encendida). Para un backend sin
+seguridad (pruebas locales) se apaga con `--dart-define=SEGURIDAD=false`; con la seguridad encendida basta ejecutar:
 
 ```bash
-flutter run -d chrome --web-port 5001 --dart-define=SEGURIDAD=true
+flutter run -d chrome --web-port 5001   # con seguridad (por omisión)
+flutter run -d chrome --web-port 5001 --dart-define=SEGURIDAD=false   # backend sin seguridad
 # emulador de Android: lo mismo, con el emulador de Authentication en la PC (puerto 9099)
 ```
 

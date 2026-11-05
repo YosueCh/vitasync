@@ -16,6 +16,12 @@
       <a routerLink="/usuarios" routerLinkActive="is-active">Usuarios</a>
       <a routerLink="/faq" routerLinkActive="is-active">Preguntas frecuentes</a>
       <app-search-box></app-search-box>
+      @if (sesion(); as s) {
+        <button type="button" class="navbar__sesion" id="navbar-salir" (click)="salir()"
+                [title]="s.correo">Cerrar sesión</button>
+      } @else {
+        <a routerLink="/acceso" routerLinkActive="is-active" id="navbar-entrar">Iniciar sesión</a>
+      }
       <a routerLink="/contacto" class="btn btn-primary navbar__cta">Solicitar demo</a>
     </nav>
   </div>

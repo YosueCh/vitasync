@@ -10,6 +10,7 @@ import {
   Metricas,
 } from '../models/smartwatch.model';
 import { UsuarioActivoService } from './usuario-activo.service';
+import { AUTH_CONFIG } from '../core/auth.config';
 
 /**
  * Servicio que enlaza la pantalla "Configuración de Dispositivo" con el
@@ -25,7 +26,7 @@ import { UsuarioActivoService } from './usuario-activo.service';
 @Injectable({ providedIn: 'root' })
 export class SmartwatchService {
   private readonly SIMULAR = false;
-  private readonly API = 'http://localhost:8081/api/smartwatch';
+  private readonly API = `${AUTH_CONFIG.api}/smartwatch`;
 
   private estado$ = new BehaviorSubject<EstadoConexion>('DESCONECTADO');
   private dispositivoActual: Dispositivo | null = null;

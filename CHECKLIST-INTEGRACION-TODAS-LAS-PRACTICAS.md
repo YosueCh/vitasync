@@ -43,7 +43,7 @@ Pruebas al cierre, todas verdes: **backend 154 · app 189 (análisis sin avisos)
 4. ~~Práctica 9: conflictos de versión~~ — hecha el 4 de noviembre (metas compartidas entre paciente y médico). La Práctica 7 quedó en parte (ver abajo).
 5. ~~Práctica 2: justificar HTTP~~ — justificada (sección 10.15 del Parcial 2). Queda como trabajo futuro el Bluetooth con un reloj físico.
 6. Práctica 7: que el enlace de invitación abra la app directamente (hoy se escribe el código) y probar el adjuntar archivo en el emulador.
-7. Encender la seguridad por omisión cuando se decida (hoy está apagada en el servidor y en la app).
+7. ~~Encender la seguridad por omisión~~ — hecho el 5 de noviembre (servidor, app móvil y sitio Angular con inicio de sesión).
 
 **Límites que conviene tener presentes:** Firestore, Authentication y las reglas se probaron en la nube real, pero con pruebas de Java y REST: el recorrido de la app en el emulador de Android sigue siendo contra el servidor de pruebas (tokens del emulador, repositorios en memoria), y el backend completo (`VitasyncBackendApplication`) nunca arrancó contra la nube porque pide Elasticsearch. Todo el trabajo está en el repositorio (rama master) y el CI corre en GitHub.
 
@@ -61,7 +61,7 @@ Pruebas al cierre, todas verdes: **backend 154 · app 189 (análisis sin avisos)
 
 **Prueba de punta a punta:** `vitasync-backend/seguridad-e2e/prueba-seguridad.mjs` — dos personas reales del emulador de Authentication contra el backend con la seguridad activa: **20 de 20 casos pasan** (401 sin token, 403 al tocar lo ajeno en 11 rutas, clave de dispositivo, chat, cuentas propias).
 
-El control de acceso sigue **apagado por omisión** (`vitasync.seguridad.activa: false` en el servidor y `SEGURIDAD` sin definir en la app); se enciende en los dos lados a la vez (ver README del backend).
+El control de acceso está **encendido por omisión** desde el 5 de noviembre: el servidor (`vitasync.seguridad.activa: true`), la app móvil (`SEGURIDAD` por omisión `true`) y el sitio Angular (nueva pantalla «Iniciar sesión», interceptor con el token y guardia en dashboard, dispositivo y usuarios). Se apaga con `--vitasync.seguridad.activa=false` y `--dart-define=SEGURIDAD=false` (ver README del backend).
 
 **Verificado en el emulador de Android (4 de noviembre):** `flutter drive` con `integration_test/seguridad_test.dart` — la app real, en el emulador, contra el backend con seguridad y el emulador de Authentication: acceso rechazado con mensaje genérico, registro con correo, UID en pantalla, cuenta propia, PIN, reloj vinculado con clave de 48 caracteres, lectura del reloj con esa clave (y 401 sin ella), y una segunda persona (Beto) que no ve ni toca nada de Ana (403). 6 capturas en `flutter-mobile-app/evidencias-integracion/seguridad/`.
 
@@ -83,7 +83,7 @@ El control de acceso sigue **apagado por omisión** (`vitasync.seguridad.activa:
 | Práctica 2 | Sensor + Bluetooth | 🟡 | **Justificada, no implementada:** el reloj simulado manda sus lecturas por HTTP al servidor (nota de diseño en el Parcial 2, sección 10.15). No hay Bluetooth ni hardware real en VitaSync |
 | Práctica 3 | Consumir una URL | ✅ | `ApiCliente` y URL separada en `api_config.dart` |
 | Práctica 4 | Base local (Room/SQLite) | ✅ | SQLite real en Android e iOS (`MetricaDaoSqlite`: índice, transacción, consultas parametrizadas y migración 1→2); en la web `localStorage`. Es solo una caché: la única fuente de verdad es Firestore |
-| Práctica 5 | Código seguro | 🟡 | PIN con hash, bloqueo, inactividad; ahora también token, dueño por cuenta y clave de dispositivo, **pero apagados por omisión** |
+| Práctica 5 | Código seguro | ✅ | PIN con hash, bloqueo, inactividad, token, dueño por cuenta y clave de dispositivo, **ya encendidos por omisión** en servidor, app móvil y sitio Angular |
 | Práctica 6 | Dos dispositivos conversando | ✅ | Chat médico-paciente por el backend |
 | Práctica 7 | Roles masivos y archivos | ✅ | Roles en lote, invitaciones de un solo uso y archivos en el chat; roles probados contra Firebase Authentication (emulador). Falta el enlace que abre la app y probar el adjuntar en el emulador
 | Práctica 8 | Pruebas de caja negra | ✅ | Documento entregado. Los 6 defectos están corregidos (D-06 con la salvedad de arriba). Caja negra del backend: 22 de 23 (falla TC-20 porque ese servidor corre sin seguridad) |
@@ -93,7 +93,7 @@ El control de acceso sigue **apagado por omisión** (`vitasync.seguridad.activa:
 | Actividad 2 | Pirámide de pruebas | 🟡 | Diagnóstico en `PIRAMIDE-DE-PRUEBAS.md` (413 pruebas: 99 unitarias, 262 de integración, 52 de punta a punta, de las cuales **solo 1 usa la app real**) y CI escrito en `.github/workflows/pruebas.yml` (**ejecutado en GitHub: 5 corridas en verde**) |
 | Actividad 3 | Matriz de pruebas de Firestore | ✅ | Aplicada a VitaSync en `vitasync-backend/MATRIZ-PRUEBAS-FIRESTORE.md` con repositorios en memoria y HTTP, **y contra el Firestore real** (`FirestoreRealTest`: cascada con subcolecciones, persistencia con un cliente nuevo y transacciones). Falta probar la pérdida de conexión (TC07) y el reinicio literal del backend |
 
-**Resumen:** ✅ 10 · 🟡 3 · ❌ 0. Las tres en amarillo (Prácticas 2 y 5 y Actividad 2) tienen un pendiente concreto que se explica en su fila.
+**Resumen:** ✅ 11 · 🟡 2 · ❌ 0. Las dos en amarillo (Práctica 2 y Actividad 2) tienen un pendiente concreto que se explica en su fila.
 
 ---
 

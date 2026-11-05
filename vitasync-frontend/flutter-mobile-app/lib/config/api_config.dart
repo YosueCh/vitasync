@@ -30,9 +30,10 @@ class ApiConfig {
     defaultValue: '10.0.2.2',
   );
 
-  /// Práctica 10: con `--dart-define=SEGURIDAD=true` la app pide correo y contraseña (Firebase Authentication)
-  /// y manda el token al backend. Debe coincidir con vitasync.seguridad.activa del servidor.
-  static const bool seguridadActiva = bool.fromEnvironment('SEGURIDAD');
+  /// Práctica 10: por omisión la app pide correo y contraseña (Firebase Authentication) y manda el token al backend,
+  /// igual que el servidor, que arranca con vitasync.seguridad.activa=true. Para un backend sin seguridad (pruebas
+  /// locales): --dart-define=SEGURIDAD=false. Debe coincidir con el servidor.
+  static const bool seguridadActiva = bool.fromEnvironment('SEGURIDAD', defaultValue: true);
 
   /// Clave web de Firebase (solo para la nube real; el emulador acepta cualquiera).
   static const String firebaseApiKey = String.fromEnvironment('FIREBASE_API_KEY', defaultValue: 'clave-local');

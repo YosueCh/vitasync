@@ -1,0 +1,12 @@
+.acceso { max-width: 420px; padding: 48px 0 72px; }
+.acceso h1 { margin: 0 0 8px; }
+.acceso__ayuda { color: var(--text); margin: 0 0 20px; }
+.acceso form { display: flex; flex-direction: column; gap: 6px; }
+.acceso label { font-weight: 600; font-size: 14px; margin-top: 10px; }
+.acceso input {
+  padding: 12px 14px; border: 1px solid var(--mist); border-radius: 10px; font: inherit;
+}
+.acceso input:focus { outline: 2px solid var(--pulse); outline-offset: 1px; }
+.acceso__botones { display: flex; gap: 12px; margin-top: 18px; flex-wrap: wrap; }
+.acceso__error { color: #b3261e; margin: 8px 0 0; font-size: 14px; }
+.acceso__aviso { background: #fff4e5; border-radius: 10px; padding: 10px 14px; margin: 0 0 12px; font-size: 14px; }

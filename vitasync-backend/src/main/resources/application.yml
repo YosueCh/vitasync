@@ -17,7 +17,8 @@ vitasync:
     allowed-origin: http://localhost:4200
   # Práctica 10: control de acceso. true = toda petición a usuarios, smartwatch, chat y firmware debe traer
   # un token de Firebase Authentication válido y tocar solo cuentas propias (401 / 403 si no).
-  # Se deja en false hasta que la app móvil inicie sesión con correo y contraseña.
+  # ENCENDIDA por omisión: la app móvil y el sitio Angular inician sesión con correo y contraseña. Se apaga solo para
+  # pruebas locales sin Firebase con --vitasync.seguridad.activa=false (o la variable VITASYNC_SEGURIDAD_ACTIVA=false).
   # Con el emulador de Authentication: variable de entorno FIREBASE_AUTH_EMULATOR_HOST=localhost:9099
   seguridad:
-    activa: false
+    activa: true

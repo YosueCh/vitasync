@@ -1,0 +1,33 @@
+<section class="acceso container">
+  @if (sesion(); as s) {
+    <h1>Sesión abierta</h1>
+    <p id="acceso-sesion">Estás dentro como <strong>{{ s.correo }}</strong>.</p>
+    <button type="button" class="btn btn-primary" id="acceso-salir" (click)="salir()">Cerrar sesión</button>
+  } @else {
+    <h1>Iniciar sesión</h1>
+    <p class="acceso__ayuda">Entra con tu correo y contraseña para ver tus cuentas, tu reloj y tus datos de salud.</p>
+
+    @if (vencida) {
+      <p class="acceso__aviso" role="status" id="acceso-vencida">Tu sesión venció. Vuelve a iniciar sesión.</p>
+    }
+
+    <form (submit)="entrar($event)" novalidate>
+      <label for="acceso-correo">Correo</label>
+      <input id="acceso-correo" type="email" name="correo" autocomplete="email"
+             [value]="correo()" (input)="escribir('correo', $event)" />
+
+      <label for="acceso-clave">Contraseña</label>
+      <input id="acceso-clave" type="password" name="clave" autocomplete="current-password"
+             [value]="clave()" (input)="escribir('clave', $event)" />
+
+      @if (error()) {
+        <p class="acceso__error" role="alert" id="acceso-error">{{ error() }}</p>
+      }
+
+      <div class="acceso__botones">
+        <button type="submit" class="btn btn-primary" id="acceso-entrar" [disabled]="trabajando()">Entrar</button>
+        <button type="button" class="btn" id="acceso-crear" [disabled]="trabajando()" (click)="crear()">Crear cuenta</button>
+      </div>
+    </form>
+  }
+</section>

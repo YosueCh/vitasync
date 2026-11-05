@@ -32,7 +32,7 @@ import java.util.regex.Pattern;
  * Se activa con vitasync.seguridad.activa=true.
  */
 @Component
-@ConditionalOnProperty(name = "vitasync.seguridad.activa", havingValue = "true")
+@ConditionalOnProperty(name = "vitasync.seguridad.activa", havingValue = "true", matchIfMissing = true)
 public class ControlDeAcceso extends OncePerRequestFilter {
 
     /** Atributo de la petición con la {@link Identidad} verificada, para los controladores. */
