@@ -202,6 +202,41 @@ describe('Pantalla «Iniciar sesión»', () => {
     expect(router.url).toBe('/dashboard');
   });
 
+  it('«Soy nuevo» pide repetir la contraseña y cambia título y botón; «Ya tengo cuenta» los quita', () => {
+    const { el, fixture } = montar();
+    expect(el.querySelector('#acceso-repetir')).toBeNull();
+    expect(el.querySelector('#acceso-titulo')?.textContent).toContain('Iniciar sesión');
+    el.querySelector<HTMLButtonElement>('#acceso-modo-crear')!.click();
+    fixture.detectChanges();
+    expect(el.querySelector('#acceso-repetir')).not.toBeNull();
+    expect(el.querySelector('#acceso-titulo')?.textContent).toContain('Crea tu cuenta');
+    expect(el.querySelector('#acceso-crear')?.textContent).toContain('Crear mi cuenta');
+    expect(el.querySelector('#acceso-entrar')).toBeNull();
+    el.querySelector<HTMLButtonElement>('#acceso-modo-entrar')!.click();
+    fixture.detectChanges();
+    expect(el.querySelector('#acceso-repetir')).toBeNull();
+    expect(el.querySelector('#acceso-entrar')).not.toBeNull();
+  });
+
+  it('crear con contraseñas distintas avisa y no llama a Firebase; con iguales registra', async () => {
+    const { el, fixture, mock, router, escribir } = montar();
+    el.querySelector<HTMLButtonElement>('#acceso-modo-crear')!.click();
+    fixture.detectChanges();
+    escribir('#acceso-correo', 'nuevo@uteq.test');
+    escribir('#acceso-clave', 'Clave123');
+    escribir('#acceso-repetir', 'Clave124');
+    el.querySelector<HTMLButtonElement>('#acceso-crear')!.click();
+    fixture.detectChanges();
+    expect(el.querySelector('#acceso-error')?.textContent).toContain('Las contraseñas no coinciden.');
+    mock.expectNone(URL_CREAR);
+
+    escribir('#acceso-repetir', 'Clave123');
+    el.querySelector<HTMLButtonElement>('#acceso-crear')!.click();
+    mock.expectOne(URL_CREAR).flush({ ...RESPUESTA, email: 'nuevo@uteq.test' });
+    await fixture.whenStable();
+    expect(router.url).toBe('/dashboard');
+  });
+
   it('un error de Firebase se muestra y la contraseña no se borra sola del formulario del error', () => {
     const { el, fixture, mock, escribir } = montar();
     escribir('#acceso-correo', 'ana@uteq.test');

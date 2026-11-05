@@ -30,7 +30,7 @@ Falta al abrir el proyecto por primera vez: `flutter pub get` en `vitasync-front
 
 ## Estado final de esta ronda (4 de noviembre de 2026)
 
-Pruebas al cierre, todas verdes: **backend 154 · app 189 (análisis sin avisos) · firmware 15 · web (Angular) 3**, más la prueba de integración de la app real en el emulador de Android (ahora también metas con una médica real, selector del chat y pestaña Roles), 29 casos de seguridad de punta a punta y 22 de reglas de Firestore. **El CI de GitHub ya corre: las 5 corridas de esta ronda salieron en verde.**
+Pruebas al cierre, todas verdes: **backend 162 · app 194 (análisis sin avisos) · firmware 15 · web (Angular) 20**, más la prueba de integración de la app real en el emulador de Android (ahora también metas con una médica real, selector del chat y pestaña Roles), 29 casos de seguridad de punta a punta y 22 de reglas de Firestore. **El CI de GitHub ya corre: las 5 corridas de esta ronda salieron en verde.**
 
 **Integrado y probado:** Prácticas 1, 3, 4 (SQLite real), 5, 6, 8 y 10 y la Actividad 1 (contactos de emergencia); Práctica 9 (indicador de estado, mensajes pendientes y metas compartidas paciente–médico con control de versión) y Práctica 7 (roles en lote, invitaciones de un solo uso y archivos en el chat); Actividad 3 en parte.
 

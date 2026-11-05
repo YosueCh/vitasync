@@ -18,17 +18,34 @@ class LoginCorreoScreen extends StatefulWidget {
 class _LoginCorreoScreenState extends State<LoginCorreoScreen> {
   final _correo = TextEditingController();
   final _clave = TextEditingController();
+  final _repetir = TextEditingController();
   String? _error;
   bool _ocupado = false;
+
+  /// false = «Entrar» (ya tengo cuenta); true = «Soy nuevo» (crear cuenta, con la contraseña repetida).
+  bool _crear = false;
 
   @override
   void dispose() {
     _correo.dispose();
     _clave.dispose();
+    _repetir.dispose();
     super.dispose();
   }
 
+  void _cambiarModo(bool crear) {
+    setState(() {
+      _crear = crear;
+      _error = null;
+      _repetir.clear();
+    });
+  }
+
   Future<void> _enviar({required bool crear}) async {
+    if (crear && _clave.text != _repetir.text) {
+      setState(() => _error = 'Las contraseñas no coinciden.');
+      return;
+    }
     setState(() {
       _ocupado = true;
       _error = null;
@@ -62,8 +79,25 @@ class _LoginCorreoScreenState extends State<LoginCorreoScreen> {
               const SizedBox(height: 8),
               Text('VitaSync', textAlign: TextAlign.center, style: tema.textTheme.headlineMedium),
               const SizedBox(height: 4),
-              Text('Inicia sesión con tu correo', textAlign: TextAlign.center, style: tema.textTheme.bodyLarge),
-              const SizedBox(height: 24),
+              Text(
+                _crear ? 'Crea tu cuenta' : 'Inicia sesión con tu correo',
+                key: const Key('titulo-acceso'),
+                textAlign: TextAlign.center,
+                style: tema.textTheme.bodyLarge,
+              ),
+              const SizedBox(height: 16),
+              // Dos modos bien distintos: entrar con una cuenta que ya existe, o crear una nueva.
+              SegmentedButton<bool>(
+                key: const Key('modo-acceso'),
+                showSelectedIcon: false,
+                segments: const [
+                  ButtonSegment(value: false, label: Text('Ya tengo cuenta'), icon: Icon(Icons.login)),
+                  ButtonSegment(value: true, label: Text('Soy nuevo'), icon: Icon(Icons.person_add_alt)),
+                ],
+                selected: {_crear},
+                onSelectionChanged: _ocupado ? null : (s) => _cambiarModo(s.first),
+              ),
+              const SizedBox(height: 20),
               TextField(
                 key: const Key('campo-correo'),
                 controller: _correo,
@@ -76,24 +110,39 @@ class _LoginCorreoScreenState extends State<LoginCorreoScreen> {
                 key: const Key('campo-clave'),
                 controller: _clave,
                 obscureText: true,
-                decoration: const InputDecoration(labelText: 'Contraseña', border: OutlineInputBorder()),
+                decoration: InputDecoration(
+                  labelText: 'Contraseña',
+                  helperText: _crear ? 'Mínimo 6 caracteres' : null,
+                  border: const OutlineInputBorder(),
+                ),
               ),
+              if (_crear) ...[
+                const SizedBox(height: 12),
+                TextField(
+                  key: const Key('campo-clave-repetir'),
+                  controller: _repetir,
+                  obscureText: true,
+                  decoration: const InputDecoration(labelText: 'Repite la contraseña', border: OutlineInputBorder()),
+                ),
+              ],
               if (_error != null) ...[
                 const SizedBox(height: 12),
                 Text(_error!, key: const Key('error-acceso'), style: TextStyle(color: tema.colorScheme.error)),
               ],
               const SizedBox(height: 16),
-              FilledButton(
-                key: const Key('btn-entrar'),
-                onPressed: _ocupado ? null : () => _enviar(crear: false),
-                child: Text(_ocupado ? 'Entrando…' : 'Entrar'),
-              ),
-              const SizedBox(height: 8),
-              OutlinedButton(
-                key: const Key('btn-crear-cuenta'),
-                onPressed: _ocupado ? null : () => _enviar(crear: true),
-                child: const Text('Crear cuenta'),
-              ),
+              // Un solo botón principal, con el nombre de lo que va a pasar según el modo.
+              if (_crear)
+                FilledButton(
+                  key: const Key('btn-crear-cuenta'),
+                  onPressed: _ocupado ? null : () => _enviar(crear: true),
+                  child: Text(_ocupado ? 'Creando…' : 'Crear mi cuenta'),
+                )
+              else
+                FilledButton(
+                  key: const Key('btn-entrar'),
+                  onPressed: _ocupado ? null : () => _enviar(crear: false),
+                  child: Text(_ocupado ? 'Entrando…' : 'Entrar'),
+                ),
             ],
           ),
         ),

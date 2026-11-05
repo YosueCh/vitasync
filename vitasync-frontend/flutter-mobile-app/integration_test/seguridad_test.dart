@@ -78,6 +78,9 @@ void main() {
 
     // ---- Ana crea su cuenta de correo (Firebase Authentication) y entra
     await escribir(t, 'campo-clave', claveAna);
+    await tocar(t, find.text('Soy nuevo')); // modo «crear cuenta»: pide repetir la contraseña
+    await t.pump(const Duration(milliseconds: 300));
+    await escribir(t, 'campo-clave-repetir', claveAna);
     await tocar(t, find.byKey(const Key('btn-crear-cuenta')));
     await esperar(t, find.byKey(const Key('sesion-uid')), motivo: 'el UID de la sesión');
     final uidAna = (t.widget<Text>(find.byKey(const Key('sesion-uid'))).data ?? '').replaceFirst('UID: ', '');
