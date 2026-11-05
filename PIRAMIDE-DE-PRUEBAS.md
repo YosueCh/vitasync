@@ -21,7 +21,7 @@ Por capa: backend 158 en JUnit + 51 casos de punta a punta · app móvil 189 + 1
 
 **Cobertura de líneas:** app móvil **90.2 %** (1467 de 1627; lo menos cubierto: `contactos_repository` 62 %, `dispositivo_screen` 69 %, `salud_repository` 70 %). Backend, firmware y web: **no medida** (no está configurada).
 
-**¿Se ejecutan solas?** Sí: `.github/workflows/pruebas.yml` (4 trabajos: backend, firmware, app y seguridad de punta a punta) **ya corre en GitHub Actions en cada push; las 5 corridas de la ronda del 4 de noviembre salieron en verde.** Las 3 pruebas de Angular se ejecutaron a mano y pasan, pero el CI todavía no las incluye.
+**¿Se ejecutan solas?** Sí: `.github/workflows/pruebas.yml` (4 trabajos: backend, firmware, app y seguridad de punta a punta) **ya corre en GitHub Actions en cada push; las 5 corridas de la ronda del 4 de noviembre salieron en verde.** Las pruebas de Angular (18) corren también en el CI, en su propio trabajo «Sitio web», y pasan.
 
 **Lo que no se ejecutó en esta ronda:** las 3 pruebas de Angular (`app.spec.ts`) y la prueba por omisión de la app de Wear OS (una sola, la que trae Flutter).
 
@@ -33,7 +33,7 @@ Por capa: backend 158 en JUnit + 51 casos de punta a punta · app móvil 189 + 1
 
 | # | Mejora | Riesgo que reduce | Esfuerzo |
 |---|---|---|---|
-| 1 | ~~Ejecutar el CI de verdad~~ (hecho). Falta sumarle las pruebas de Angular | Sin ejecución automática, cualquier regresión llega a la entrega sin que nadie corra las pruebas | Bajo |
+| 1 | ~~Ejecutar el CI de verdad y sumarle las pruebas de Angular~~ (hecho) | Sin ejecución automática, cualquier regresión llega a la entrega sin que nadie corra las pruebas | Bajo |
 | 2 | **Ampliar las pruebas con la app real en emulador**: mensajes pendientes con el modo avión real, bloqueo del PIN a los 5 fallos, límite de 5 contactos; y medir la cobertura del backend (JaCoCo) | Errores de la unión pantalla-red-servidor que solo se ven con la app entera | Medio |
 
 ## Qué ejecutar y cuándo

@@ -9,6 +9,8 @@ y versionado con [SemVer](https://semver.org/lang/es/) (`MAYOR.MENOR.PARCHE`):
 ## [Sin publicar] — Desarrollo Móvil Integral: vista móvil e integración de prácticas
 
 ### Cambiado
+- Práctica 2: se decide mantener el reloj **simulado** (conexión por HTTP, sin Bluetooth ni hardware real); queda
+  documentado como decisión de diseño y no como pendiente.
 - La seguridad (Práctica 10) está **encendida por omisión** en el servidor (`vitasync.seguridad.activa: true`),
   en la app móvil (`SEGURIDAD` por omisión `true`) y en el sitio Angular. Se apaga con
   `--vitasync.seguridad.activa=false` y `--dart-define=SEGURIDAD=false`.
