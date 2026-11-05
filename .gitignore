@@ -12,6 +12,7 @@ vitasync-frontend/node_modules/
 vitasync-frontend/dist/
 vitasync-frontend/.angular/
 vitasync-frontend/public/flutter_stats/
+vitasync-frontend/public/movil/
 
 # --- Flutter (wearable + flutter-stats-widget) ---
 **/build/
