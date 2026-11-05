@@ -4,6 +4,7 @@ import '../models/usuario.dart';
 import '../services/chat_repository.dart';
 import '../services/contactos_repository.dart';
 import '../services/firmware_repository.dart';
+import '../services/metas_repository.dart';
 import '../services/salud_repository.dart';
 import '../services/usuario_repository.dart';
 import 'chat_screen.dart';
@@ -25,6 +26,7 @@ class ShellScreen extends StatefulWidget {
     this.intervaloSondeo,
     this.intervaloChat,
     this.contactos,
+    this.metasDe,
   });
 
   final Usuario cuenta;
@@ -36,6 +38,9 @@ class ShellScreen extends StatefulWidget {
 
   /// Contactos de emergencia (Actividad 1). Si es null no se muestra la pestaña.
   final ContactosRepository? contactos;
+
+  /// Metas de una cuenta (Práctica 9). [medico] = quien guarda es el médico. null = sin metas editables.
+  final MetasRepository Function(String cuentaId, {bool medico})? metasDe;
 
   /// Cada cuánto se refrescan las pantallas. null desactiva el sondeo.
   final Duration? intervaloSondeo;
@@ -78,6 +83,7 @@ class _ShellScreenState extends State<ShellScreen> {
           ResumenScreen(
             repositorio: widget.repositorio,
             intervalo: widget.intervaloSondeo,
+            metas: widget.metasDe?.call(widget.cuenta.id),
           ),
           DispositivoScreen(
             repositorio: widget.repositorio,
@@ -89,6 +95,7 @@ class _ShellScreenState extends State<ShellScreen> {
             chat: widget.chat,
             usuarios: widget.usuarios,
             intervalo: widget.intervaloChat,
+            metasDe: widget.metasDe,
           ),
           if (widget.contactos != null) ContactosScreen(repositorio: widget.contactos!),
         ],

@@ -58,7 +58,8 @@ public class ControlDeAcceso extends OncePerRequestFilter {
     protected boolean shouldNotFilter(HttpServletRequest req) {
         String ruta = req.getRequestURI();
         boolean protegida = ruta.startsWith("/api/usuarios") || ruta.startsWith("/api/smartwatch")
-                || ruta.startsWith("/api/chat") || ruta.startsWith("/api/firmware") || ruta.startsWith("/api/contactos");
+                || ruta.startsWith("/api/chat") || ruta.startsWith("/api/firmware") || ruta.startsWith("/api/contactos")
+                || ruta.startsWith("/api/metas");
         boolean publica = "GET".equals(req.getMethod()) && "/api/firmware/ultima".equals(ruta);
         return !protegida || publica || "OPTIONS".equals(req.getMethod());
     }
@@ -88,8 +89,10 @@ public class ControlDeAcceso extends OncePerRequestFilter {
         String objetivo = cuentaObjetivo(req);
         if (objetivo != null && !id.esAdmin() && usuarios.isDisponible()) {
             boolean esDueno = usuarios.propietarioDe(objetivo).map(id.uid()::equals).orElse(false);
-            boolean medicoEnChat = id.esMedico() && req.getRequestURI().startsWith("/api/chat/");
-            if (!esDueno && !medicoEnChat) {
+            // Un médico puede atender el chat de un paciente y fijarle metas; nada más (no administra cuentas).
+            boolean medicoAutorizado = id.esMedico()
+                    && (req.getRequestURI().startsWith("/api/chat/") || req.getRequestURI().startsWith("/api/metas"));
+            if (!esDueno && !medicoAutorizado) {
                 error(res, HttpServletResponse.SC_FORBIDDEN, "No tienes permiso para acceder a esta cuenta.");
                 return;
             }

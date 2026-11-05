@@ -6,17 +6,22 @@ import '../models/estado_vista.dart';
 import '../models/lectura_metricas.dart';
 import '../models/tipo_metrica.dart';
 import '../services/api_cliente.dart';
+import '../services/metas_repository.dart';
 import '../services/salud_repository.dart';
 import '../widgets/metrica_card.dart';
 import '../widgets/vista_estado.dart';
 import 'historial_screen.dart';
+import 'metas_screen.dart';
 
-const _metaPasos = 10000;
+const _metaPasosPredeterminada = 10000;
 
 class ResumenScreen extends StatefulWidget {
-  const ResumenScreen({super.key, required this.repositorio, this.intervalo});
+  const ResumenScreen({super.key, required this.repositorio, this.intervalo, this.metas});
 
   final SaludRepository repositorio;
+
+  /// Metas de la cuenta (Práctica 9). null = la app no las maneja y se usa la meta predeterminada.
+  final MetasRepository? metas;
 
   /// Cada cuánto se consulta de nuevo. null desactiva el sondeo.
   final Duration? intervalo;
@@ -31,6 +36,8 @@ class _ResumenScreenState extends State<ResumenScreen> {
 
   /// true = el servidor respondió que la cuenta aún no tiene lecturas (D-05: no se muestran valores inventados).
   bool _sinLecturas = false;
+
+  int _metaPasos = _metaPasosPredeterminada;
 
   @override
   void initState() {
@@ -57,6 +64,7 @@ class _ResumenScreenState extends State<ResumenScreen> {
   /// Consulta sin parpadeo: si ya hay datos en pantalla, los reemplaza en
   /// silencio; si falla, conserva los que ya se veían marcados sin conexión.
   Future<void> _actualizar() async {
+    await _actualizarMetas();
     try {
       final lectura = await widget.repositorio.obtenerMetricas();
       if (!mounted) return;
@@ -69,6 +77,25 @@ class _ResumenScreenState extends State<ResumenScreen> {
     } on Exception {
       _fallar('No se pudo conectar al servidor');
     }
+  }
+
+  /// La meta de pasos viene del servidor; si no se puede leer, se conserva la que ya se veía.
+  Future<void> _actualizarMetas() async {
+    final repo = widget.metas;
+    if (repo == null) return;
+    try {
+      final m = await repo.obtener();
+      if (mounted && m.metaPasos != _metaPasos) setState(() => _metaPasos = m.metaPasos);
+    } on Exception {
+      // Sin red o rechazo: no estorba al resto del resumen.
+    }
+  }
+
+  Future<void> _abrirMetas() async {
+    await Navigator.of(context).push(MaterialPageRoute<void>(
+      builder: (_) => MetasScreen(repositorio: widget.metas!),
+    ));
+    if (mounted) await _actualizarMetas();
   }
 
   void _fallar(String mensaje) {
@@ -89,7 +116,9 @@ class _ResumenScreenState extends State<ResumenScreen> {
       onReintentar: _cargar,
       builder: (context, lectura) => _Contenido(
         lectura: lectura,
+        metaPasos: _metaPasos,
         onAbrirHistorial: _abrirHistorial,
+        onAbrirMetas: widget.metas == null ? null : _abrirMetas,
       ),
     );
   }
@@ -133,10 +162,17 @@ class _SinLecturas extends StatelessWidget {
 }
 
 class _Contenido extends StatelessWidget {
-  const _Contenido({required this.lectura, required this.onAbrirHistorial});
+  const _Contenido({
+    required this.lectura,
+    required this.metaPasos,
+    required this.onAbrirHistorial,
+    this.onAbrirMetas,
+  });
 
   final LecturaMetricas lectura;
+  final int metaPasos;
   final ValueChanged<TipoMetrica> onAbrirHistorial;
+  final VoidCallback? onAbrirMetas;
 
   @override
   Widget build(BuildContext context) {
@@ -144,7 +180,18 @@ class _Contenido extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        Text('Mis datos de salud', style: Theme.of(context).textTheme.titleLarge),
+        Row(
+          children: [
+            Expanded(child: Text('Mis datos de salud', style: Theme.of(context).textTheme.titleLarge)),
+            if (onAbrirMetas != null)
+              TextButton.icon(
+                key: const Key('abrir-metas'),
+                onPressed: onAbrirMetas,
+                icon: const Icon(Icons.flag_outlined),
+                label: const Text('Mis metas'),
+              ),
+          ],
+        ),
         const SizedBox(height: 4),
         Text('Toca una tarjeta para ver su historial',
             style: Theme.of(context).textTheme.bodySmall),
@@ -163,8 +210,8 @@ class _Contenido extends StatelessWidget {
               icono: Icons.directions_walk,
               titulo: 'Pasos',
               valor: '${metricas.pasos}',
-              unidad: '/ $_metaPasos',
-              progreso: metricas.pasos / _metaPasos,
+              unidad: '/ $metaPasos',
+              progreso: metricas.pasos / metaPasos,
               onTap: () => onAbrirHistorial(TipoMetrica.pasos),
             ),
             MetricaCard(

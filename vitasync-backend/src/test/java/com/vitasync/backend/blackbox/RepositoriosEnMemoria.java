@@ -115,6 +115,37 @@ public final class RepositoriosEnMemoria {
         }
     }
 
+    public static class Metas extends com.vitasync.backend.metas.MetasRepository {
+        private final Map<String, com.vitasync.backend.metas.MetasCuentaDTO> datos = new ConcurrentHashMap<>();
+
+        public Metas() {
+            super(null);
+        }
+
+        @Override
+        public java.util.Optional<com.vitasync.backend.metas.MetasCuentaDTO> obtener(String cuentaId) {
+            return java.util.Optional.ofNullable(datos.get(cuentaId));
+        }
+
+        /** Atómico por cuenta (equivale a la transacción de Firestore). */
+        @Override
+        public synchronized com.vitasync.backend.metas.MetasCuentaDTO actualizar(String cuentaId, Long versionEsperada,
+                java.util.function.UnaryOperator<com.vitasync.backend.metas.MetasCuentaDTO> cambio) {
+            var actual = datos.getOrDefault(cuentaId, com.vitasync.backend.metas.MetasCuentaDTO.PREDETERMINADAS);
+            if (versionEsperada != null && versionEsperada != actual.version()) {
+                throw new com.vitasync.backend.metas.ConflictoDeVersionException(actual);
+            }
+            var nuevo = cambio.apply(actual).conVersion(actual.version() + 1);
+            datos.put(cuentaId, nuevo);
+            return nuevo;
+        }
+
+        @Override
+        public void eliminar(String cuentaId) {
+            datos.remove(cuentaId);
+        }
+    }
+
     public static class Contactos extends com.vitasync.backend.contactos.ContactoRepository {
         private final Map<String, List<com.vitasync.backend.contactos.ContactoDTO>> datos = new ConcurrentHashMap<>();
 

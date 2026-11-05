@@ -32,11 +32,18 @@ class HttpUsuarioRepository implements UsuarioRepository, CreadorDeCuentas {
   @override
   Future<List<Usuario>> listarHabilitados() async {
     final lista = await _api.get('/usuarios') as List<dynamic>;
-    return lista
+    final cuentas = lista
         .cast<Map<String, dynamic>>()
         .map(Usuario.fromJson)
         .where((u) => u.habilitado)
         .toList();
+    // Orden estable y predecible (D-06): por nombre y, si empatan, por usuario. Antes salían en el orden en que
+    // el servidor las devolvía, que podía cambiar entre una consulta y otra.
+    cuentas.sort((a, b) {
+      final porNombre = a.nombreCompleto.toLowerCase().compareTo(b.nombreCompleto.toLowerCase());
+      return porNombre != 0 ? porNombre : a.username.toLowerCase().compareTo(b.username.toLowerCase());
+    });
+    return cuentas;
   }
 }
 

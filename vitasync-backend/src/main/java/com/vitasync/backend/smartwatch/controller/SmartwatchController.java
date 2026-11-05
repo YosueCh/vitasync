@@ -15,8 +15,16 @@ public class SmartwatchController {
 
     private final SmartwatchService service;
 
+    /** Metas de la cuenta (Práctica 9); si no hay, el reloj recibe las predeterminadas del servicio. */
+    private com.vitasync.backend.metas.MetasService metas;
+
     public SmartwatchController(SmartwatchService service) {
         this.service = service;
+    }
+
+    @org.springframework.beans.factory.annotation.Autowired(required = false)
+    public void setMetas(com.vitasync.backend.metas.MetasService metas) {
+        this.metas = metas;
     }
 
     /** GET /api/smartwatch/status?usuarioId=... */
@@ -34,7 +42,14 @@ public class SmartwatchController {
     /** POST /api/smartwatch/sync?usuarioId=...  (smartwatch -> sistema -> metas) */
     @PostMapping("/sync")
     public ResponseEntity<?> sync(@RequestParam String usuarioId, @RequestBody(required = false) MetricasDTO metricas) {
-        return conFirebase(() -> service.sincronizar(usuarioId, metricas));
+        return conFirebase(() -> {
+            MetasDTO respuesta = service.sincronizar(usuarioId, metricas);
+            if (metas == null || !metas.isDisponible()) return respuesta;
+            // El reloj recibe las metas que la paciente y su médico fijaron para la cuenta.
+            var m = metas.obtener(usuarioId);
+            return new MetasDTO(m.metaPasos(), m.metaCalorias(), m.metaSueno(),
+                    respuesta.notificaciones(), respuesta.recordatorios());
+        });
     }
 
     /** GET /api/smartwatch/metrics?usuarioId=... */

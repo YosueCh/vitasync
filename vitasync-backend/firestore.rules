@@ -32,6 +32,12 @@ service cloud.firestore {
       allow read: if haySesion() && resource.data.propietarioUid == request.auth.uid;
       allow write: if false;
 
+      // Metas de la cuenta (preferencias/metas): las lee su dueño; las escribe el backend (con control de versión).
+      match /preferencias/{documento} {
+        allow read: if esMiCuenta(cuentaId);
+        allow write: if false;
+      }
+
       // Contactos de emergencia de la cuenta: solo los lee su dueño; los escribe el backend.
       match /contactos/{contactoId} {
         allow read: if esMiCuenta(cuentaId);

@@ -88,6 +88,11 @@ public class FirebaseConfig {
     }
 
     @Bean
+    public com.vitasync.backend.metas.MetasRepository metasRepository(Optional<Firestore> firestore) {
+        return firestore.map(com.vitasync.backend.metas.MetasRepository::new).orElse(null);
+    }
+
+    @Bean
     public CastSessionRepository castSessionRepository(Optional<Firestore> firestore) {
         return firestore.map(CastSessionRepository::new).orElse(null);
     }

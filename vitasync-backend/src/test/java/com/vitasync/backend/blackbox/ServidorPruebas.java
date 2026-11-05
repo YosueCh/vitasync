@@ -55,6 +55,7 @@ import java.util.List;
         FirmwareController.class, FirmwareService.class,
         ChatController.class, ChatService.class,
         com.vitasync.backend.contactos.ContactoController.class, com.vitasync.backend.contactos.ContactoService.class,
+        com.vitasync.backend.metas.MetasController.class, com.vitasync.backend.metas.MetasService.class,
         ControlDeAcceso.class,
         CorsConfig.class
 })
@@ -68,6 +69,11 @@ public class ServidorPruebas {
     @Bean
     DispositivoRepository dispositivoRepository() {
         return new RepositoriosEnMemoria.Dispositivos();
+    }
+
+    @Bean
+    com.vitasync.backend.metas.MetasRepository metasRepository() {
+        return new RepositoriosEnMemoria.Metas();
     }
 
     @Bean

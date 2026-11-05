@@ -1,6 +1,6 @@
 # Pirámide de pruebas de VitaSync (Actividad 2 aplicada al proyecto)
 
-Revisado el 4 de noviembre de 2026. Los conteos salen de `node scripts/diagnostico-piramide.mjs` y coinciden con las ejecuciones reales (backend 103, app 142, firmware 15).
+Revisado el 4 de noviembre de 2026. Los conteos salen de `node scripts/diagnostico-piramide.mjs` y coinciden con las ejecuciones reales (backend 119, app 167, firmware 15).
 
 ## Fase 1 · Diagnóstico
 
@@ -8,18 +8,18 @@ Revisado el 4 de noviembre de 2026. Los conteos salen de `node scripts/diagnosti
 
 | Nivel | Qué es aquí | Pruebas | % |
 |---|---|---|---|
-| Unitarias | Una clase sola con sus dependencias simuladas o en memoria (servicios del backend, DAO, servicios de la app, firmware) | 99 | 31.4 % |
-| Integración | Varias piezas reales juntas (controlador + filtro de seguridad + servicio; pantalla + repositorio) | 164 | 52.1 % |
-| De punta a punta | El sistema entero: servidor con personas reales del emulador de Authentication, y la app real en un emulador de Android | 52 | 16.5 % |
-| **Total** | | **315** | |
+| Unitarias | Una clase sola con sus dependencias simuladas o en memoria (servicios del backend, DAO, servicios de la app, firmware) | 99 | 27.8 % |
+| Integración | Varias piezas reales juntas (controlador + filtro de seguridad + servicio; pantalla + repositorio) | 205 | 57.6 % |
+| De punta a punta | El sistema entero: servidor con personas reales del emulador de Authentication, y la app real en un emulador de Android | 52 | 14.6 % |
+| **Total** | | **356** | |
 
-Por capa: backend 103 en JUnit + 51 casos de punta a punta · app móvil 142 + 1 de integración en emulador · firmware 15 · web (Angular) 3.
+Por capa: backend 119 en JUnit + 51 casos de punta a punta · app móvil 167 + 1 de integración en emulador · firmware 15 · web (Angular) 3.
 
 **Dos matices que cambian la lectura:**
 1. De los 52 «de punta a punta», **51 son casos por API** (un servidor real, pero sin interfaz). **Con la app real hay 1 sola prueba** (de muchos pasos, en un solo emulador).
-2. La pirámide no tiene forma de pirámide: es más ancha en el medio (52 % integración) que en la base (31 % unitarias). La mayoría de las pruebas de la app son de pantalla, no de clase.
+2. La pirámide no tiene forma de pirámide: es más ancha en el medio (53 % integración) que en la base (31 % unitarias). La mayoría de las pruebas de la app son de pantalla, no de clase.
 
-**Cobertura de líneas:** app móvil **89.6 %** (1450 de 1619; lo menos cubierto: `contactos_repository` 62 %, `dispositivo_screen` 69 %, `salud_repository` 70 %). Backend, firmware y web: **no medida** (no está configurada).
+**Cobertura de líneas:** app móvil **90.2 %** (1467 de 1627; lo menos cubierto: `contactos_repository` 62 %, `dispositivo_screen` 69 %, `salud_repository` 70 %). Backend, firmware y web: **no medida** (no está configurada).
 
 **¿Se ejecutan solas?** Hasta hoy no: no había ejecución automática. Se escribió `.github/workflows/pruebas.yml` (4 trabajos: backend, firmware, app y seguridad de punta a punta). **Está validado como YAML pero no se ha ejecutado todavía en GitHub Actions.**
 
@@ -48,8 +48,8 @@ Por capa: backend 103 en JUnit + 51 casos de punta a punta · app móvil 142 + 1
 
 ```bash
 node scripts/diagnostico-piramide.mjs                         # esta tabla
-cd vitasync-backend && mvn test                               # 103
-cd vitasync-frontend/flutter-mobile-app && flutter test --coverage   # 142 + cobertura
+cd vitasync-backend && mvn test                               # 119
+cd vitasync-frontend/flutter-mobile-app && flutter test --coverage   # 167 + cobertura
 cd vitasync-firmware-sim && dart test                         # 15
 ```
 

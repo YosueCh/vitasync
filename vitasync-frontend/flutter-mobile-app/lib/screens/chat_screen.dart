@@ -6,7 +6,9 @@ import '../models/mensaje_chat.dart';
 import '../models/usuario.dart';
 import '../services/api_cliente.dart';
 import '../services/chat_repository.dart';
+import '../services/metas_repository.dart';
 import '../services/usuario_repository.dart';
+import 'metas_screen.dart';
 
 /// Máximo de caracteres por mensaje (el backend aplica el mismo límite).
 const int maxCaracteresMensaje = 200;
@@ -27,6 +29,7 @@ class ChatScreen extends StatefulWidget {
     required this.chat,
     required this.usuarios,
     this.intervalo,
+    this.metasDe,
   });
 
   /// Cuenta con la que se inició sesión. Como paciente, su id es la conversación.
@@ -36,6 +39,9 @@ class ChatScreen extends StatefulWidget {
 
   /// Cada cuánto se consultan mensajes nuevos. null desactiva el sondeo.
   final Duration? intervalo;
+
+  /// Metas de una cuenta (Práctica 9): el médico puede fijarlas al paciente que atiende.
+  final MetasRepository Function(String cuentaId, {bool medico})? metasDe;
 
   @override
   State<ChatScreen> createState() => _ChatScreenState();
@@ -308,6 +314,15 @@ class _ChatScreenState extends State<ChatScreen> {
     setState(_mensajes.clear);
   }
 
+  void _abrirMetasDelPaciente() {
+    final id = _pacienteId;
+    final fabrica = widget.metasDe;
+    if (id == null || fabrica == null) return;
+    Navigator.of(context).push(MaterialPageRoute<void>(
+      builder: (_) => MetasScreen(repositorio: fabrica(id, medico: true), titulo: 'Metas del paciente'),
+    ));
+  }
+
   // --------------------------------------------------------------- vista
 
   @override
@@ -340,8 +355,19 @@ class _ChatScreenState extends State<ChatScreen> {
           const Expanded(
             child: Center(child: Text('Elige al paciente que vas a atender.')),
           )
-        else
+        else ...[
+          if (rol == RolChat.medico && widget.metasDe != null)
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton.icon(
+                key: const Key('metas-del-paciente'),
+                onPressed: _abrirMetasDelPaciente,
+                icon: const Icon(Icons.flag_outlined),
+                label: const Text('Metas del paciente'),
+              ),
+            ),
           Expanded(child: _conversacion(rol)),
+        ],
       ],
     );
   }
@@ -364,6 +390,19 @@ class _ChatScreenState extends State<ChatScreen> {
                 ? 'Cerraste el chat. El historial se borró.'
                 : 'El paciente cerró el chat. El historial se borró.',
             icono: Icons.lock_outline,
+          ),
+        if (_cerrado && rol == RolChat.paciente)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12, 0, 12, 4),
+            child: SizedBox(
+              width: double.infinity,
+              child: FilledButton.icon(
+                key: const Key('abrir-chat-nuevo'),
+                onPressed: _abrirChatNuevo,
+                icon: const Icon(Icons.chat),
+                label: const Text('ABRIR CHAT NUEVO'),
+              ),
+            ),
           ),
         // Contador de mensajes enviados por cada dispositivo.
         Padding(
@@ -419,17 +458,15 @@ class _ChatScreenState extends State<ChatScreen> {
 
   Widget _pie(RolChat rol) {
     // El paciente cerró el chat: solo puede abrir uno nuevo; el médico espera.
+    // (el botón «ABRIR CHAT NUEVO» del paciente está arriba, junto al aviso de chat cerrado: así los avisos
+    // que aparecen abajo ya no lo tapan)
     if (_cerrado) {
-      return Padding(
-        padding: const EdgeInsets.all(12),
-        child: rol == RolChat.paciente
-            ? FilledButton.icon(
-                onPressed: _abrirChatNuevo,
-                icon: const Icon(Icons.chat),
-                label: const Text('ABRIR CHAT NUEVO'),
-              )
-            : const Text('Esperando a que el paciente abra un chat nuevo…'),
-      );
+      return rol == RolChat.paciente
+          ? const SizedBox.shrink()
+          : const Padding(
+              padding: EdgeInsets.all(12),
+              child: Text('Esperando a que el paciente abra un chat nuevo…'),
+            );
     }
     return Padding(
       padding: const EdgeInsets.fromLTRB(12, 4, 12, 8),
@@ -494,18 +531,26 @@ class _SelectorRol extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
-      child: Wrap(
-        spacing: 8,
-        runSpacing: 0,
-        crossAxisAlignment: WrapCrossAlignment.center,
+      // «Soy:» arriba y las opciones debajo: en pantallas angostas las opciones pasan a una segunda línea,
+      // pero siempre alineadas a la izquierda (antes «Soy:» compartía línea y el selector quedaba desalineado).
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text('Soy:'),
-          for (final r in RolChat.values)
-            ChoiceChip(
-              label: Text('${r.nombre} (${r.dispositivo})'),
-              selected: rol == r,
-              onSelected: (_) => onElegir(r),
-            ),
+          const SizedBox(height: 4),
+          Wrap(
+            spacing: 8,
+            runSpacing: 4,
+            children: [
+              for (final r in RolChat.values)
+                ChoiceChip(
+                  key: Key('rol-${r.name}'),
+                  label: Text('${r.nombre} (${r.dispositivo})'),
+                  selected: rol == r,
+                  onSelected: (_) => onElegir(r),
+                ),
+            ],
+          ),
         ],
       ),
     );

@@ -14,6 +14,7 @@ import 'services/auth_service.dart';
 import 'services/cache_salud_repository.dart';
 import 'services/chat_repository.dart';
 import 'services/contactos_repository.dart';
+import 'services/metas_repository.dart';
 import 'services/cuenta_correo_service.dart';
 import 'services/firmware_repository.dart';
 import 'services/salud_repository.dart';
@@ -46,6 +47,7 @@ class VitaSyncMobileApp extends StatelessWidget {
     this.intervaloChat,
     this.cuentaCorreo,
     this.contactosPara,
+    this.metasDe,
   });
 
   /// Conectada al backend: HTTP real, caché local y sondeo cada 3 s.
@@ -74,12 +76,16 @@ class VitaSyncMobileApp extends StatelessWidget {
       intervaloChat: ApiConfig.intervaloChat,
       cuentaCorreo: correo,
       contactosPara: (u) => HttpContactosRepository(usuarioId: u.id, api: cliente),
+      metasDe: (cuentaId, {bool medico = false}) => HttpMetasRepository(usuarioId: cuentaId, api: cliente),
     );
   }
 
   /// Datos de ejemplo, sin red ni sondeo.
   factory VitaSyncMobileApp.muestra({Key? key}) {
+    final metas = AlmacenMetasMuestra();
     return VitaSyncMobileApp(
+      metasDe: (cuentaId, {bool medico = false}) =>
+          MuestraMetasRepository(metas, quien: medico ? 'Médico' : 'Paciente'),
       key: key,
       usuarios: const MuestraUsuarioRepository(),
       saludPara: (_) => const MuestraSaludRepository(),
@@ -110,6 +116,9 @@ class VitaSyncMobileApp extends StatelessWidget {
 
   /// Contactos de emergencia de la cuenta (Actividad 1). null = la app no muestra esa pestaña.
   final ContactosRepository Function(Usuario cuenta)? contactosPara;
+
+  /// Metas compartidas de una cuenta (Práctica 9). null = la app no las muestra.
+  final MetasRepository Function(String cuentaId, {bool medico})? metasDe;
 
   @override
   Widget build(BuildContext context) {
@@ -212,6 +221,7 @@ class _PuertaDeAccesoState extends State<_PuertaDeAcceso> {
         firmware: _firmware,
         chat: _chat,
         contactos: _contactos,
+        metasDe: app.metasDe,
         usuarios: app.usuarios,
         intervaloSondeo: app.intervaloSondeo,
         intervaloChat: app.intervaloChat,

@@ -30,18 +30,18 @@ Falta al abrir el proyecto por primera vez: `flutter pub get` en `vitasync-front
 
 ## Estado final de esta ronda (4 de noviembre de 2026)
 
-Pruebas al cierre, todas verdes: **backend 103 · app 142 (análisis sin avisos) · firmware 15**, más la prueba de integración de la app real en el emulador de Android, 29 casos de seguridad de punta a punta y 22 de reglas de Firestore.
+Pruebas al cierre, todas verdes: **backend 119 · app 167 (análisis sin avisos) · firmware 15**, más la prueba de integración de la app real en el emulador de Android, 29 casos de seguridad de punta a punta y 22 de reglas de Firestore.
 
-**Integrado y probado:** Prácticas 1, 3, 4 (SQLite real), 5, 6, 8 y 10 y la Actividad 1 (contactos de emergencia); Práctica 9 en parte (indicador de estado y mensajes pendientes); Actividad 3 en parte.
+**Integrado y probado:** Prácticas 1, 3, 4 (SQLite real), 5, 6, 8 y 10 y la Actividad 1 (contactos de emergencia); Práctica 9 (indicador de estado, mensajes pendientes y metas compartidas paciente–médico con control de versión); Actividad 3 en parte.
 
-**Defectos de la Práctica 8:** corregidos D-01, D-02, D-03, D-04 y D-05; abierto solo D-06 (detalles de interfaz).
+**Defectos de la Práctica 8:** corregidos los seis. D-06 (detalles de interfaz) con una salvedad: tres de sus cuatro detalles se corrigieron y se probaron por comportamiento y posición; el cuarto (espera de ~12 s sin servidor) no se pudo reproducir porque el código ya limita la espera a 4 s, y ese límite quedó protegido con una prueba. **El orden de las cuentas y la posición del botón conviene mirarlos a simple vista en un emulador.**
 
 **Lo que queda, en orden de prioridad:**
 1. Probar los repositorios contra Firestore (borrado real de subcolecciones y persistencia del servidor): no se pudo con el cliente de Java y el emulador; probar el backend real con `FIRESTORE_EMULATOR_HOST` o con el proyecto de Firebase de la nube. Ahí mismo, probar la firma real de los tokens.
 2. Actividad 2: ejecutar el CI de verdad en GitHub (hoy solo está escrito), sumar las pruebas de Angular y ampliar las pruebas con la app real (ver `PIRAMIDE-DE-PRUEBAS.md`).
 3. ~~Actividad 1 (contactos de emergencia) dentro de VitaSync~~ — hecha el 4 de noviembre.
-4. Práctica 9: conflictos de versión (falta un dato que dos teléfonos editen) y Práctica 7: envío de archivos.
-5. Práctica 2: Bluetooth (o justificar HTTP) y D-06.
+4. ~~Práctica 9: conflictos de versión~~ — hecha el 4 de noviembre (metas compartidas entre paciente y médico). Queda la Práctica 7: envío de archivos.
+5. Práctica 2: Bluetooth (o justificar HTTP).
 6. Encender la seguridad por omisión cuando se decida (hoy está apagada en el servidor y en la app).
 
 **Límites que conviene tener presentes:** todo lo de Firebase se probó con emuladores, no con un proyecto en la nube; el servidor de pruebas acepta tokens sin firma del emulador; no se hizo ningún commit.
@@ -85,8 +85,8 @@ El control de acceso sigue **apagado por omisión** (`vitasync.seguridad.activa:
 | Práctica 5 | Código seguro | 🟡 | PIN con hash, bloqueo, inactividad; ahora también token, dueño por cuenta y clave de dispositivo, **pero apagados por omisión** |
 | Práctica 6 | Dos dispositivos conversando | ✅ | Chat médico-paciente por el backend |
 | Práctica 7 | Roles masivos y archivos | ❌ | No hay roles en el servidor ni envío de archivos |
-| Práctica 8 | Pruebas de caja negra | ✅ | Documento entregado. De los 6 defectos ya están corregidos **D-01 a D-05**; solo sigue abierto **D-06** (detalles de interfaz). Caja negra del backend: 22 de 23 (falla TC-20 porque ese servidor corre sin seguridad) |
-| Práctica 9 | Base compartida entre dispositivos | 🟡 | El Resumen dice si los datos están confirmados por el servidor o vienen de la caché; el Chat guarda como «pendiente de enviar» lo que no se pudo mandar y lo reenvía solo. **Faltan los conflictos de versión** (no hay un dato que dos teléfonos editen) |
+| Práctica 8 | Pruebas de caja negra | ✅ | Documento entregado. Los 6 defectos están corregidos (D-06 con la salvedad de arriba). Caja negra del backend: 22 de 23 (falla TC-20 porque ese servidor corre sin seguridad) |
+| Práctica 9 | Base compartida entre dispositivos | ✅ | El Resumen dice si los datos están confirmados por el servidor o vienen de la caché; el Chat guarda como «pendiente» lo que no se pudo enviar; y las **metas** las editan la paciente y su médico con control de versión (409 + diálogo «usar las del otro / sobrescribir»). Falta probar la transacción contra Firestore real
 | Práctica 10 | Autenticación y reglas de seguridad | ✅ | Correo/contraseña, UID en pantalla, dueño por cuenta, reglas de Firestore (17/17) y la app probada en emulador; solo en emuladores, no en la nube real |
 | Actividad 1 | Capturar, enviar y consultar en la nube | ✅ | Pestaña «Contactos» de emergencia: alta, lista y borrado guardados en Firestore (`usuarios/{cuenta}/contactos`), con validación en el servidor, máximo 5, sin teléfonos repetidos, control de dueño y reglas de Firestore |
 | Actividad 2 | Pirámide de pruebas | 🟡 | Diagnóstico en `PIRAMIDE-DE-PRUEBAS.md` (315 pruebas: 99 unitarias, 164 de integración, 52 de punta a punta, de las cuales **solo 1 usa la app real**) y CI escrito en `.github/workflows/pruebas.yml` (**validado como YAML, sin ejecutar todavía en GitHub**) |
@@ -131,14 +131,14 @@ Tamaño: **S** = unas horas · **M** = una sesión larga · **L** = varias sesio
 
 ### Etapa 3 — Dispositivos, roles y nube (cubre P2, P7, P9 y Actividad 1) · tamaño L
 
-- [ ] **Práctica 9 dentro de VitaSync:** un dato editable por la persona (por ejemplo «meta diaria de pasos») que se sincronice entre dos teléfonos de la misma cuenta, con control de versión para los conflictos
+- [x] **Práctica 9 dentro de VitaSync:** «Metas» (pasos, calorías, sueño) que editan la paciente y su médico, con control de versión: si el segundo guarda con una versión vieja el servidor responde 409 y la app ofrece «usar las del otro» o «sobrescribir con las mías». 16 pruebas del servidor y 16 de la app. **No probado:** la transacción contra Firestore real ni el flujo en el emulador de Android
 - [x] **Actividad 1 dentro de VitaSync:** «Contactos de emergencia» (capturar, guardar en la nube y consultar): 12 pruebas del servidor, 17 de la app, 9 casos de punta a punta, 5 de reglas y la pestaña probada en el emulador de Android
 - [ ] **Práctica 7:** roles de servidor (administrador, médico/agente, pacientes) y envío de archivos en el chat. Se apoya en la Etapa 1
 - [ ] **Práctica 2:** Bluetooth (BLE) reloj → teléfono, o una nota de diseño que justifique usar HTTP
 
 ### Etapa 4 — Calidad (cubre P8 y Actividad 2) · tamaño M
 
-- [ ] Corregir **D-06** (detalles de interfaz) y repetir la caja negra de la Práctica 8 como informe de regresión. Última corrida del backend: 22 de 23 casos pasan (antes 17); solo falla TC-20 (ese servidor corre con la seguridad apagada)
+- [x] D-06 (detalles de interfaz): cuentas en orden alfabético, selector de rol alineado, «Abrir chat nuevo» arriba y fuera del alcance de los avisos (9 pruebas nuevas). Pendiente: repetir la caja negra de la Práctica 8 como informe de regresión (última corrida del backend: 22 de 23; solo falla TC-20, porque ese servidor corre con la seguridad apagada)
 - [ ] **Diagnóstico de la pirámide** de VitaSync (cuántas pruebas hay de cada nivel y cuáles se ejecutan solas)
 - [ ] Crear `.github/workflows/pruebas.yml`: unitarias e integración en cada push; E2E antes de entregar
 - [ ] Agregar al menos una prueba E2E del flujo crítico (iniciar sesión → ver métricas → chatear)

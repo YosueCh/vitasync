@@ -6,9 +6,15 @@ import '../config/api_config.dart';
 
 /// Error de comunicación con el backend, con un mensaje listo para mostrar.
 class ApiException implements Exception {
-  const ApiException(this.mensaje, {this.sinConexion = false});
+  const ApiException(this.mensaje, {this.sinConexion = false, this.codigo, this.datos});
 
   final String mensaje;
+
+  /// Código de máquina que manda el servidor en algunos rechazos (p. ej. «CONFLICTO_DE_VERSION»).
+  final String? codigo;
+
+  /// Cuerpo completo de la respuesta de rechazo (p. ej. las metas «actual» de un conflicto de versión).
+  final Map<String, dynamic>? datos;
 
   /// true = el servidor no se pudo alcanzar (sin red, apagado, tiempo agotado). Es distinto de una respuesta
   /// del servidor que rechaza la operación (400, 401, 403, 409…): lo primero se puede reintentar, lo segundo no.
@@ -53,6 +59,15 @@ class ApiCliente {
         ),
       );
 
+  /// PUT con cuerpo JSON (cambios con control de versión).
+  Future<dynamic> putJson(String ruta, Object cuerpo) => _enviar(
+        (h) => _cliente.put(
+          _uri(ruta, null),
+          headers: {...h, 'content-type': 'application/json'},
+          body: jsonEncode(cuerpo),
+        ),
+      );
+
   Uri _uri(String ruta, Map<String, String>? query) =>
       Uri.parse('$baseUrl$ruta').replace(queryParameters: query);
 
@@ -80,13 +95,29 @@ class ApiCliente {
     // el cuerpo un mensaje pensado para el usuario: se muestra tal cual.
     if (const {400, 409, 429}.contains(respuesta.statusCode)) {
       final mensaje = _mensajeDelServidor(respuesta);
-      if (mensaje != null) throw ApiException(mensaje);
+      if (mensaje != null) {
+        throw ApiException(mensaje, codigo: _campo(respuesta, 'codigo'), datos: _cuerpo(respuesta));
+      }
     }
     if (respuesta.statusCode < 200 || respuesta.statusCode >= 300) {
       throw ApiException('El servidor respondió ${respuesta.statusCode}');
     }
     if (respuesta.body.isEmpty) return null;
     return jsonDecode(utf8.decode(respuesta.bodyBytes));
+  }
+
+  static Map<String, dynamic>? _cuerpo(http.Response respuesta) {
+    try {
+      final cuerpo = jsonDecode(utf8.decode(respuesta.bodyBytes));
+      return cuerpo is Map<String, dynamic> ? cuerpo : null;
+    } on Object {
+      return null;
+    }
+  }
+
+  static String? _campo(http.Response respuesta, String nombre) {
+    final valor = _cuerpo(respuesta)?[nombre];
+    return valor is String ? valor : null;
   }
 
   static String? _mensajeDelServidor(http.Response respuesta) {

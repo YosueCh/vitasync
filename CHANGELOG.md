@@ -8,7 +8,18 @@ y versionado con [SemVer](https://semver.org/lang/es/) (`MAYOR.MENOR.PARCHE`):
 
 ## [Sin publicar] — Desarrollo Móvil Integral: vista móvil e integración de prácticas
 
+### Añadido
+- Práctica 9 dentro de VitaSync: metas de salud (pasos, calorías, sueño) compartidas entre la paciente y su médico.
+  `GET/PUT /api/metas` con control de versión (409 con las metas actuales si alguien se adelantó), fusión por
+  campos sin versión, quién editó según el rol del token, acceso del médico solo a chat y metas, borrado con la
+  cuenta, reglas de Firestore y metas reales en la sincronización del reloj. En la app: «Mis metas» (Resumen),
+  «Metas del paciente» (Chat, médico) y diálogo de conflicto. Pruebas: 16 en el servidor y 16 en la app.
+
 ### Corregido
+- D-06 de la Práctica 8 (detalles de interfaz): la lista de cuentas sale en orden alfabético estable; el
+  selector de rol del chat pone «Soy:» arriba y las opciones debajo, alineadas; el botón «Abrir chat nuevo»
+  pasó junto al aviso de chat cerrado, arriba, para que los avisos inferiores no lo tapen; y se protege con
+  una prueba que el error sin servidor llegue a los 4 segundos. 9 pruebas nuevas.
 - D-04 de la Práctica 8: al eliminar una cuenta se borran también su reloj, su historial de lecturas, su chat
   y su orden de firmware (interfaz `LimpiezaDeCuenta`); si la limpieza falla a medias la cuenta sigue
   existiendo para reintentar. 6 pruebas nuevas (`EliminarCuentaTest`).
