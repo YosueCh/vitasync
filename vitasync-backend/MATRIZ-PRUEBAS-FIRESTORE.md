@@ -45,5 +45,5 @@ Para repetirlo: `mvn test -Dtest=FirestoreRealTest -Dfirestore.real=true -Dfireb
 
 - **Reiniciar el backend completo** y ver los datos: lo que se probó es leer con un cliente nuevo; los datos viven en la nube, así que sobreviven por construcción, pero no se hizo la prueba literal de apagar y volver a encender.
 - **TC07 contra Firestore real**: la pérdida de conexión solo se probó con fallos simulados.
-- **Las reglas de seguridad publicadas en la nube** (`firestore.rules`): se probaron 22 casos con el emulador, pero no se comprobó que las reglas desplegadas en el proyecto sean esas. El servidor entra con la clave de servicio y las salta, así que estas pruebas no las ejercitan.
+- **Las reglas por dueño con una persona real de la nube:** las reglas de `firestore.rules` se publicaron en el proyecto el 5 de noviembre de 2026 (las anteriores eran las de modo de prueba, vencidas el 1 de septiembre; respaldo en `firestore.rules.nube-anterior`, reconstruido de la consola). Contra la nube solo se comprobó que SIN sesión se niega leer y escribir (403). Que «cada persona lee lo suyo» sigue probado solo con el emulador, porque en la nube falta activar el método Correo y contraseña de Authentication.
 - **La firma real de los tokens de Authentication** de la nube (el método Correo y contraseña tiene que estar activado en la consola).
