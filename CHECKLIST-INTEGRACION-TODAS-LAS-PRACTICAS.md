@@ -30,9 +30,9 @@ Falta al abrir el proyecto por primera vez: `flutter pub get` en `vitasync-front
 
 ## Estado final de esta ronda (4 de noviembre de 2026)
 
-Pruebas al cierre, todas verdes: **backend 119 · app 167 (análisis sin avisos) · firmware 15**, más la prueba de integración de la app real en el emulador de Android, 29 casos de seguridad de punta a punta y 22 de reglas de Firestore.
+Pruebas al cierre, todas verdes: **backend 137 · app 184 (análisis sin avisos) · firmware 15**, más la prueba de integración de la app real en el emulador de Android, 29 casos de seguridad de punta a punta y 22 de reglas de Firestore.
 
-**Integrado y probado:** Prácticas 1, 3, 4 (SQLite real), 5, 6, 8 y 10 y la Actividad 1 (contactos de emergencia); Práctica 9 (indicador de estado, mensajes pendientes y metas compartidas paciente–médico con control de versión); Actividad 3 en parte.
+**Integrado y probado:** Prácticas 1, 3, 4 (SQLite real), 5, 6, 8 y 10 y la Actividad 1 (contactos de emergencia); Práctica 9 (indicador de estado, mensajes pendientes y metas compartidas paciente–médico con control de versión) y Práctica 7 en parte (roles en lote y archivos en el chat); Actividad 3 en parte.
 
 **Defectos de la Práctica 8:** corregidos los seis. D-06 (detalles de interfaz) con una salvedad: tres de sus cuatro detalles se corrigieron y se probaron por comportamiento y posición; el cuarto (espera de ~12 s sin servidor) no se pudo reproducir porque el código ya limita la espera a 4 s, y ese límite quedó protegido con una prueba. **El orden de las cuentas y la posición del botón conviene mirarlos a simple vista en un emulador.**
 
@@ -40,7 +40,7 @@ Pruebas al cierre, todas verdes: **backend 119 · app 167 (análisis sin avisos)
 1. Probar los repositorios contra Firestore (borrado real de subcolecciones y persistencia del servidor): no se pudo con el cliente de Java y el emulador; probar el backend real con `FIRESTORE_EMULATOR_HOST` o con el proyecto de Firebase de la nube. Ahí mismo, probar la firma real de los tokens.
 2. Actividad 2: ejecutar el CI de verdad en GitHub (hoy solo está escrito), sumar las pruebas de Angular y ampliar las pruebas con la app real (ver `PIRAMIDE-DE-PRUEBAS.md`).
 3. ~~Actividad 1 (contactos de emergencia) dentro de VitaSync~~ — hecha el 4 de noviembre.
-4. ~~Práctica 9: conflictos de versión~~ — hecha el 4 de noviembre (metas compartidas entre paciente y médico). Queda la Práctica 7: envío de archivos.
+4. ~~Práctica 9: conflictos de versión~~ — hecha el 4 de noviembre (metas compartidas entre paciente y médico). La Práctica 7 quedó en parte (ver abajo).
 5. Práctica 2: Bluetooth (o justificar HTTP).
 6. Encender la seguridad por omisión cuando se decida (hoy está apagada en el servidor y en la app).
 
@@ -84,7 +84,7 @@ El control de acceso sigue **apagado por omisión** (`vitasync.seguridad.activa:
 | Práctica 4 | Base local (Room/SQLite) | ✅ | SQLite real en Android e iOS (`MetricaDaoSqlite`: índice, transacción, consultas parametrizadas y migración 1→2); en la web `localStorage`. Es solo una caché: la única fuente de verdad es Firestore |
 | Práctica 5 | Código seguro | 🟡 | PIN con hash, bloqueo, inactividad; ahora también token, dueño por cuenta y clave de dispositivo, **pero apagados por omisión** |
 | Práctica 6 | Dos dispositivos conversando | ✅ | Chat médico-paciente por el backend |
-| Práctica 7 | Roles masivos y archivos | ❌ | No hay roles en el servidor ni envío de archivos |
+| Práctica 7 | Roles masivos y archivos | 🟡 | Roles en lote por el administrador y archivos en el chat, con pruebas. Faltan invitaciones por URL y probar contra Firebase Authentication real
 | Práctica 8 | Pruebas de caja negra | ✅ | Documento entregado. Los 6 defectos están corregidos (D-06 con la salvedad de arriba). Caja negra del backend: 22 de 23 (falla TC-20 porque ese servidor corre sin seguridad) |
 | Práctica 9 | Base compartida entre dispositivos | ✅ | El Resumen dice si los datos están confirmados por el servidor o vienen de la caché; el Chat guarda como «pendiente» lo que no se pudo enviar; y las **metas** las editan la paciente y su médico con control de versión (409 + diálogo «usar las del otro / sobrescribir»). Falta probar la transacción contra Firestore real
 | Práctica 10 | Autenticación y reglas de seguridad | ✅ | Correo/contraseña, UID en pantalla, dueño por cuenta, reglas de Firestore (17/17) y la app probada en emulador; solo en emuladores, no en la nube real |
@@ -133,7 +133,7 @@ Tamaño: **S** = unas horas · **M** = una sesión larga · **L** = varias sesio
 
 - [x] **Práctica 9 dentro de VitaSync:** «Metas» (pasos, calorías, sueño) que editan la paciente y su médico, con control de versión: si el segundo guarda con una versión vieja el servidor responde 409 y la app ofrece «usar las del otro» o «sobrescribir con las mías». 16 pruebas del servidor y 16 de la app. **No probado:** la transacción contra Firestore real ni el flujo en el emulador de Android
 - [x] **Actividad 1 dentro de VitaSync:** «Contactos de emergencia» (capturar, guardar en la nube y consultar): 12 pruebas del servidor, 17 de la app, 9 casos de punta a punta, 5 de reglas y la pestaña probada en el emulador de Android
-- [ ] **Práctica 7:** roles de servidor (administrador, médico/agente, pacientes) y envío de archivos en el chat. Se apoya en la Etapa 1
+- [x] **Práctica 7 (en parte):** el administrador asigna roles a varias personas de un solo envío (`PUT /api/admin/roles`: se valida todo el lote antes de cambiar nada; solo «paciente» y «médico»; no se toca a un administrador) y el chat envía archivos (PNG, JPG, PDF o TXT hasta 300 KB, con el contenido verificado en el servidor). 18 pruebas del servidor y 17 de la app. **No hecho:** invitaciones por URL de un solo uso, nombrar administrador desde la app, reparto atómico de roles (Firebase no lo ofrece), abrir PDF dentro de la app, y probar los roles contra Firebase Authentication real
 - [ ] **Práctica 2:** Bluetooth (BLE) reloj → teléfono, o una nota de diseño que justifique usar HTTP
 
 ### Etapa 4 — Calidad (cubre P8 y Actividad 2) · tamaño M

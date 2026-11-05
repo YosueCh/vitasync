@@ -15,6 +15,7 @@ import 'services/cache_salud_repository.dart';
 import 'services/chat_repository.dart';
 import 'services/contactos_repository.dart';
 import 'services/metas_repository.dart';
+import 'services/roles_repository.dart';
 import 'services/cuenta_correo_service.dart';
 import 'services/firmware_repository.dart';
 import 'services/salud_repository.dart';
@@ -48,6 +49,7 @@ class VitaSyncMobileApp extends StatelessWidget {
     this.cuentaCorreo,
     this.contactosPara,
     this.metasDe,
+    this.roles,
   });
 
   /// Conectada al backend: HTTP real, caché local y sondeo cada 3 s.
@@ -77,6 +79,8 @@ class VitaSyncMobileApp extends StatelessWidget {
       cuentaCorreo: correo,
       contactosPara: (u) => HttpContactosRepository(usuarioId: u.id, api: cliente),
       metasDe: (cuentaId, {bool medico = false}) => HttpMetasRepository(usuarioId: cuentaId, api: cliente),
+      // La pestaña de roles solo existe con la seguridad activa: sin sesiones no hay roles que repartir.
+      roles: correo != null ? HttpRolesRepository(api: cliente) : null,
     );
   }
 
@@ -119,6 +123,9 @@ class VitaSyncMobileApp extends StatelessWidget {
 
   /// Metas compartidas de una cuenta (Práctica 9). null = la app no las muestra.
   final MetasRepository Function(String cuentaId, {bool medico})? metasDe;
+
+  /// Asignación de roles por el administrador (Práctica 7). null = la app no muestra esa pestaña.
+  final RolesRepository? roles;
 
   @override
   Widget build(BuildContext context) {
@@ -222,6 +229,7 @@ class _PuertaDeAccesoState extends State<_PuertaDeAcceso> {
         chat: _chat,
         contactos: _contactos,
         metasDe: app.metasDe,
+        roles: app.roles,
         usuarios: app.usuarios,
         intervaloSondeo: app.intervaloSondeo,
         intervaloChat: app.intervaloChat,

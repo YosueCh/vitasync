@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 
@@ -7,6 +9,7 @@ import '../models/usuario.dart';
 import '../services/api_cliente.dart';
 import '../services/chat_repository.dart';
 import '../services/metas_repository.dart';
+import '../services/selector_archivo.dart';
 import '../services/usuario_repository.dart';
 import 'metas_screen.dart';
 
@@ -30,7 +33,11 @@ class ChatScreen extends StatefulWidget {
     required this.usuarios,
     this.intervalo,
     this.metasDe,
+    this.elegirArchivo = elegirArchivoDelSistema,
   });
+
+  /// Cómo se elige un archivo para adjuntar (Práctica 7). Las pruebas pasan uno falso.
+  final Future<ArchivoElegido?> Function() elegirArchivo;
 
   /// Cuenta con la que se inició sesión. Como paciente, su id es la conversación.
   final Usuario cuenta;
@@ -257,6 +264,71 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
+  /// Adjunta un archivo: se revisa tipo y tamaño aquí y el servidor lo vuelve a revisar (incluido el contenido).
+  Future<void> _adjuntar() async {
+    final rol = _rol;
+    final pacienteId = _pacienteId;
+    if (rol == null || pacienteId == null || _enviando) return;
+    final ArchivoElegido? archivo;
+    try {
+      archivo = await widget.elegirArchivo();
+    } on Exception {
+      _avisar('No se pudo abrir el selector de archivos.');
+      return;
+    }
+    if (archivo == null || !mounted) return;
+    final error = ReglasArchivo.validar(archivo.nombre, archivo.bytes.length);
+    if (error != null) {
+      _avisar(error);
+      return;
+    }
+    setState(() => _enviando = true);
+    try {
+      await widget.chat.enviarArchivo(pacienteId, rol,
+          nombre: archivo.nombre, tipo: ReglasArchivo.tipoDe(archivo.nombre)!, bytes: archivo.bytes);
+      if (!mounted) return;
+      _avisar('Archivo enviado: ${archivo.nombre}');
+      await _actualizar();
+    } on ApiException catch (e) {
+      // Un archivo no se deja «pendiente»: sin conexión se avisa y se vuelve a elegir (es mucho más pesado que un texto).
+      _avisar(e.sinConexion ? 'Sin conexión: el archivo no se envió. Inténtalo de nuevo.' : e.mensaje);
+    } finally {
+      if (mounted) setState(() => _enviando = false);
+    }
+  }
+
+  /// Descarga un archivo del chat y lo muestra: imagen y texto dentro de la app; el PDF solo se comprueba.
+  Future<void> _abrirArchivo(MensajeChat m) async {
+    final pacienteId = _pacienteId;
+    final adjunto = m.archivo;
+    if (pacienteId == null || adjunto == null) return;
+    final Uint8List bytes;
+    try {
+      bytes = await widget.chat.descargar(pacienteId, m.id);
+    } on ApiException catch (e) {
+      _avisar(e.mensaje);
+      return;
+    }
+    if (!mounted) return;
+    await showDialog<void>(
+      context: context,
+      builder: (_) => AlertDialog(
+        key: const Key('visor-archivo'),
+        title: Text(adjunto.nombre),
+        content: SingleChildScrollView(
+          child: adjunto.esImagen
+              ? Image.memory(bytes, errorBuilder: (_, __, ___) => const Text('No se pudo mostrar la imagen.'))
+              : adjunto.esTexto
+                  ? Text(_comoTexto(bytes))
+                  : Text('PDF recibido (${bytes.length} bytes). Esta versión de la app no incluye visor de PDF.'),
+        ),
+        actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cerrar'))],
+      ),
+    );
+  }
+
+  static String _comoTexto(Uint8List bytes) => utf8.decode(bytes, allowMalformed: true);
+
   /// Paciente: cierra el chat; el servidor borra todo el historial.
   Future<void> _cerrarChat() async {
     final pacienteId = _pacienteId;
@@ -440,7 +512,11 @@ class _ChatScreenState extends State<ChatScreen> {
                   itemCount: _mensajes.length + pendientes.length,
                   itemBuilder: (_, i) {
                     if (i < _mensajes.length) {
-                      return _Burbuja(mensaje: _mensajes[i], propio: _mensajes[i].emisor == rol);
+                      return _Burbuja(
+                        mensaje: _mensajes[i],
+                        propio: _mensajes[i].emisor == rol,
+                        onAbrirArchivo: _mensajes[i].archivo == null ? null : () => _abrirArchivo(_mensajes[i]),
+                      );
                     }
                     final p = pendientes[i - _mensajes.length];
                     return _Burbuja(
@@ -491,6 +567,15 @@ class _ChatScreenState extends State<ChatScreen> {
                 ),
               ),
               const SizedBox(width: 8),
+              Padding(
+                padding: const EdgeInsets.only(top: 4),
+                child: IconButton(
+                  key: const Key('adjuntar-archivo'),
+                  onPressed: _enviando ? null : _adjuntar,
+                  icon: const Icon(Icons.attach_file),
+                  tooltip: 'Adjuntar archivo',
+                ),
+              ),
               Padding(
                 padding: const EdgeInsets.only(top: 4),
                 child: IconButton.filled(
@@ -641,9 +726,12 @@ class _Pendiente {
 }
 
 class _Burbuja extends StatelessWidget {
-  const _Burbuja({required this.mensaje, required this.propio, this.pendiente = false});
+  const _Burbuja({required this.mensaje, required this.propio, this.pendiente = false, this.onAbrirArchivo});
 
   final MensajeChat mensaje;
+
+  /// Solo si el mensaje trae un archivo: lo descarga y lo muestra.
+  final VoidCallback? onAbrirArchivo;
   final bool propio;
 
   /// true = aún no lo confirmó el servidor (se muestra atenuado y con el aviso «Pendiente de enviar»).
@@ -674,7 +762,22 @@ class _Burbuja extends StatelessWidget {
               '${mensaje.emisor.dispositivo} · ${mensaje.emisor.nombre}',
               style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
             ),
-            Text(mensaje.texto),
+            if (mensaje.archivo case final a?)
+              InkWell(
+                key: Key('archivo-${mensaje.id}'),
+                onTap: onAbrirArchivo,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  child: Row(mainAxisSize: MainAxisSize.min, children: [
+                    Icon(a.esImagen ? Icons.image_outlined : Icons.insert_drive_file_outlined, size: 20),
+                    const SizedBox(width: 6),
+                    Flexible(child: Text('${a.nombre} (${(a.tamano / 1024).ceil()} KB)',
+                        style: const TextStyle(decoration: TextDecoration.underline))),
+                  ]),
+                ),
+              )
+            else
+              Text(mensaje.texto),
             Text(
               pendiente ? '$texto · ⏳ Pendiente de enviar' : '$texto · ✓ enviado',
               style: const TextStyle(fontSize: 11),

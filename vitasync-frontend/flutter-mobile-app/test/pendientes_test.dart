@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:vitasync_mobile/models/estado_dispositivo.dart';
@@ -45,6 +47,14 @@ class _ChatInestable implements ChatRepository {
     if (rechazo != null) throw ApiException(rechazo!);
     return real.enviar(pacienteId, emisor, texto);
   }
+
+  @override
+  Future<void> enviarArchivo(String pacienteId, RolChat emisor,
+          {required String nombre, required String tipo, required Uint8List bytes}) =>
+      real.enviarArchivo(pacienteId, emisor, nombre: nombre, tipo: tipo, bytes: bytes);
+
+  @override
+  Future<Uint8List> descargar(String pacienteId, int mensajeId) => real.descargar(pacienteId, mensajeId);
 
   @override
   Future<void> cerrar(String pacienteId) => real.cerrar(pacienteId);

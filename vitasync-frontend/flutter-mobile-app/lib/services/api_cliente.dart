@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:http/http.dart' as http;
 
@@ -44,6 +45,12 @@ class ApiCliente {
   Future<dynamic> get(String ruta, [Map<String, String>? query]) =>
       _enviar((h) => _cliente.get(_uri(ruta, query), headers: h));
 
+  /// GET de un archivo: devuelve los bytes tal cual (sin interpretarlos como JSON).
+  Future<Uint8List> getBytes(String ruta, [Map<String, String>? query]) async {
+    final r = await _enviarCrudo((h) => _cliente.get(_uri(ruta, query), headers: h));
+    return r.bodyBytes;
+  }
+
   Future<dynamic> post(String ruta, [Map<String, String>? query]) =>
       _enviar((h) => _cliente.post(_uri(ruta, query), headers: h));
 
@@ -72,6 +79,13 @@ class ApiCliente {
       Uri.parse('$baseUrl$ruta').replace(queryParameters: query);
 
   Future<dynamic> _enviar(Future<http.Response> Function(Map<String, String> cabeceras) peticion) async {
+    final respuesta = await _enviarCrudo(peticion);
+    if (respuesta.body.isEmpty) return null;
+    return jsonDecode(utf8.decode(respuesta.bodyBytes));
+  }
+
+  /// Envía la petición y traduce los fallos a [ApiException]; devuelve la respuesta ya exitosa.
+  Future<http.Response> _enviarCrudo(Future<http.Response> Function(Map<String, String> cabeceras) peticion) async {
     final http.Response respuesta;
     try {
       final token = await _token?.call();
@@ -102,8 +116,7 @@ class ApiCliente {
     if (respuesta.statusCode < 200 || respuesta.statusCode >= 300) {
       throw ApiException('El servidor respondió ${respuesta.statusCode}');
     }
-    if (respuesta.body.isEmpty) return null;
-    return jsonDecode(utf8.decode(respuesta.bodyBytes));
+    return respuesta;
   }
 
   static Map<String, dynamic>? _cuerpo(http.Response respuesta) {

@@ -56,6 +56,7 @@ import java.util.List;
         ChatController.class, ChatService.class,
         com.vitasync.backend.contactos.ContactoController.class, com.vitasync.backend.contactos.ContactoService.class,
         com.vitasync.backend.metas.MetasController.class, com.vitasync.backend.metas.MetasService.class,
+        com.vitasync.backend.admin.RolesController.class, com.vitasync.backend.admin.RolesService.class,
         ControlDeAcceso.class,
         CorsConfig.class
 })
@@ -69,6 +70,11 @@ public class ServidorPruebas {
     @Bean
     DispositivoRepository dispositivoRepository() {
         return new RepositoriosEnMemoria.Dispositivos();
+    }
+
+    @Bean
+    com.vitasync.backend.admin.GestorDeRoles gestorDeRoles() {
+        return new RepositoriosEnMemoria.Roles();
     }
 
     @Bean

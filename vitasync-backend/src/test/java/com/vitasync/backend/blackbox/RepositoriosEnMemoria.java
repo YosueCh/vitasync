@@ -115,6 +115,35 @@ public final class RepositoriosEnMemoria {
         }
     }
 
+    /** Roles en memoria: el servidor de pruebas arranca con una administradora de prueba. */
+    public static class Roles implements com.vitasync.backend.admin.GestorDeRoles {
+        private final Map<String, Persona> personas = new java.util.concurrent.ConcurrentHashMap<>();
+
+        public Roles() {
+        }
+
+        public Roles agregar(String uid, String correo, String rol) {
+            personas.put(uid, new Persona(uid, correo, rol));
+            return this;
+        }
+
+        @Override
+        public java.util.List<Persona> listar() {
+            return personas.values().stream().sorted(java.util.Comparator.comparing(Persona::uid)).toList();
+        }
+
+        @Override
+        public java.util.Optional<Persona> buscar(String uid) {
+            return java.util.Optional.ofNullable(personas.get(uid));
+        }
+
+        @Override
+        public void asignar(String uid, String rol) {
+            Persona p = personas.get(uid);
+            personas.put(uid, new Persona(uid, p.correo(), rol));
+        }
+    }
+
     public static class Metas extends com.vitasync.backend.metas.MetasRepository {
         private final Map<String, com.vitasync.backend.metas.MetasCuentaDTO> datos = new ConcurrentHashMap<>();
 

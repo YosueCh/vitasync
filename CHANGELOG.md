@@ -9,6 +9,11 @@ y versionado con [SemVer](https://semver.org/lang/es/) (`MAYOR.MENOR.PARCHE`):
 ## [Sin publicar] — Desarrollo Móvil Integral: vista móvil e integración de prácticas
 
 ### Añadido
+- Práctica 7 dentro de VitaSync: roles en lote y archivos en el chat. `GET /api/admin/personas` y
+  `PUT /api/admin/roles` (solo administrador; el lote se valida completo antes de aplicarse; solo paciente y
+  médico). `POST /api/chat/{id}/archivos` y `GET .../archivos/{mensaje}` con PNG, JPG, PDF o TXT de hasta 300 KB,
+  contenido verificado por sus primeros bytes, nombre limpio, cupo por conversación y descarga como adjunto.
+  En la app: botón de adjuntar, visor de imagen y texto, y pestaña «Roles». 18 pruebas del servidor y 17 de la app.
 - Práctica 9 dentro de VitaSync: metas de salud (pasos, calorías, sueño) compartidas entre la paciente y su médico.
   `GET/PUT /api/metas` con control de versión (409 con las metas actuales si alguien se adelantó), fusión por
   campos sin versión, quién editó según el rol del token, acceso del médico solo a chat y metas, borrado con la

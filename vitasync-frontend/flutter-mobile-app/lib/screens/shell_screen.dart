@@ -5,12 +5,14 @@ import '../services/chat_repository.dart';
 import '../services/contactos_repository.dart';
 import '../services/firmware_repository.dart';
 import '../services/metas_repository.dart';
+import '../services/roles_repository.dart';
 import '../services/salud_repository.dart';
 import '../services/usuario_repository.dart';
 import 'chat_screen.dart';
 import 'contactos_screen.dart';
 import 'dispositivo_screen.dart';
 import 'resumen_screen.dart';
+import 'roles_screen.dart';
 
 /// Estructura de la app ya autenticada: barra superior y navegación inferior
 /// entre "Resumen", "Dispositivo" y "Chat" (médico-paciente, Práctica 6).
@@ -27,6 +29,7 @@ class ShellScreen extends StatefulWidget {
     this.intervaloChat,
     this.contactos,
     this.metasDe,
+    this.roles,
   });
 
   final Usuario cuenta;
@@ -41,6 +44,9 @@ class ShellScreen extends StatefulWidget {
 
   /// Metas de una cuenta (Práctica 9). [medico] = quien guarda es el médico. null = sin metas editables.
   final MetasRepository Function(String cuentaId, {bool medico})? metasDe;
+
+  /// Asignación de roles (Práctica 7, solo con la seguridad activa; el servidor deja pasar solo al administrador).
+  final RolesRepository? roles;
 
   /// Cada cuánto se refrescan las pantallas. null desactiva el sondeo.
   final Duration? intervaloSondeo;
@@ -98,6 +104,7 @@ class _ShellScreenState extends State<ShellScreen> {
             metasDe: widget.metasDe,
           ),
           if (widget.contactos != null) ContactosScreen(repositorio: widget.contactos!),
+          if (widget.roles != null) RolesScreen(repositorio: widget.roles!),
         ],
       ),
       bottomNavigationBar: NavigationBar(
@@ -109,6 +116,8 @@ class _ShellScreenState extends State<ShellScreen> {
           const NavigationDestination(icon: Icon(Icons.chat_bubble_outline), label: 'Chat'),
           if (widget.contactos != null)
             const NavigationDestination(icon: Icon(Icons.contact_phone_outlined), label: 'Contactos'),
+          if (widget.roles != null)
+            const NavigationDestination(icon: Icon(Icons.admin_panel_settings_outlined), label: 'Roles'),
         ],
       ),
     );

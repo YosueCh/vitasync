@@ -1,6 +1,6 @@
 # Pirámide de pruebas de VitaSync (Actividad 2 aplicada al proyecto)
 
-Revisado el 4 de noviembre de 2026. Los conteos salen de `node scripts/diagnostico-piramide.mjs` y coinciden con las ejecuciones reales (backend 119, app 167, firmware 15).
+Revisado el 4 de noviembre de 2026. Los conteos salen de `node scripts/diagnostico-piramide.mjs` y coinciden con las ejecuciones reales (backend 137, app 184, firmware 15).
 
 ## Fase 1 · Diagnóstico
 
@@ -8,12 +8,12 @@ Revisado el 4 de noviembre de 2026. Los conteos salen de `node scripts/diagnosti
 
 | Nivel | Qué es aquí | Pruebas | % |
 |---|---|---|---|
-| Unitarias | Una clase sola con sus dependencias simuladas o en memoria (servicios del backend, DAO, servicios de la app, firmware) | 99 | 27.8 % |
-| Integración | Varias piezas reales juntas (controlador + filtro de seguridad + servicio; pantalla + repositorio) | 205 | 57.6 % |
-| De punta a punta | El sistema entero: servidor con personas reales del emulador de Authentication, y la app real en un emulador de Android | 52 | 14.6 % |
-| **Total** | | **356** | |
+| Unitarias | Una clase sola con sus dependencias simuladas o en memoria (servicios del backend, DAO, servicios de la app, firmware) | 99 | 25.3 % |
+| Integración | Varias piezas reales juntas (controlador + filtro de seguridad + servicio; pantalla + repositorio) | 240 | 61.4 % |
+| De punta a punta | El sistema entero: servidor con personas reales del emulador de Authentication, y la app real en un emulador de Android | 52 | 13.3 % |
+| **Total** | | **391** | |
 
-Por capa: backend 119 en JUnit + 51 casos de punta a punta · app móvil 167 + 1 de integración en emulador · firmware 15 · web (Angular) 3.
+Por capa: backend 137 en JUnit + 51 casos de punta a punta · app móvil 184 + 1 de integración en emulador · firmware 15 · web (Angular) 3.
 
 **Dos matices que cambian la lectura:**
 1. De los 52 «de punta a punta», **51 son casos por API** (un servidor real, pero sin interfaz). **Con la app real hay 1 sola prueba** (de muchos pasos, en un solo emulador).
@@ -48,8 +48,8 @@ Por capa: backend 119 en JUnit + 51 casos de punta a punta · app móvil 167 + 1
 
 ```bash
 node scripts/diagnostico-piramide.mjs                         # esta tabla
-cd vitasync-backend && mvn test                               # 119
-cd vitasync-frontend/flutter-mobile-app && flutter test --coverage   # 167 + cobertura
+cd vitasync-backend && mvn test                               # 137
+cd vitasync-frontend/flutter-mobile-app && flutter test --coverage   # 184 + cobertura
 cd vitasync-firmware-sim && dart test                         # 15
 ```
 

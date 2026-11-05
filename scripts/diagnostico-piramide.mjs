@@ -16,7 +16,7 @@ const RAIZ = path.resolve(import.meta.dirname, '..');
 const REGLAS = [
   // --- backend (JUnit): cada clase de prueba se clasifica a mano porque el nombre no lo dice
   { patron: /vitasync-backend\/src\/test\/.*\/(PinServiceTest|ChatServiceTest|FirmwareServiceTest|SmartwatchServiceTest|SmartwatchHistorialTest|EliminarCuentaTest)\.java$/, nivel: 'unitaria', capa: 'Backend' },
-  { patron: /vitasync-backend\/src\/test\/.*\/(ChatControllerTest|ControlDeAccesoTest|ContactosTest|MetasTest|CajaNegraApiTest)\.java$/, nivel: 'integracion', capa: 'Backend' },
+  { patron: /vitasync-backend\/src\/test\/.*\/(ChatControllerTest|ControlDeAccesoTest|ContactosTest|MetasTest|RolesYArchivosTest|CajaNegraApiTest)\.java$/, nivel: 'integracion', capa: 'Backend' },
   // --- firmware simulado
   { patron: /vitasync-firmware-sim\/test\/.*_test\.dart$/, nivel: 'unitaria', capa: 'Firmware' },
   // --- app móvil

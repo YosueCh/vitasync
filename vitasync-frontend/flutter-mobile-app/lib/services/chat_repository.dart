@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:typed_data';
+
 import '../models/mensaje_chat.dart';
 import 'api_cliente.dart';
 
@@ -9,6 +12,13 @@ abstract interface class ChatRepository {
   Future<ConversacionChat> consultar(String pacienteId, {int desde = 0});
 
   Future<void> enviar(String pacienteId, RolChat emisor, String texto);
+
+  /// Adjunta un archivo (PNG, JPG, PDF o TXT de hasta 300 KB) como un mensaje más.
+  Future<void> enviarArchivo(String pacienteId, RolChat emisor,
+      {required String nombre, required String tipo, required Uint8List bytes});
+
+  /// Descarga el contenido del archivo del mensaje [mensajeId].
+  Future<Uint8List> descargar(String pacienteId, int mensajeId);
 
   /// El paciente cierra el chat: el servidor borra el historial.
   Future<void> cerrar(String pacienteId);
@@ -42,6 +52,20 @@ class HttpChatRepository implements ChatRepository {
   }
 
   @override
+  Future<void> enviarArchivo(String pacienteId, RolChat emisor,
+      {required String nombre, required String tipo, required Uint8List bytes}) async {
+    await _api.postJson(_ruta(pacienteId, 'archivos'), {
+      'emisor': emisor.api,
+      'nombre': nombre,
+      'tipo': tipo,
+      'contenidoBase64': base64Encode(bytes),
+    });
+  }
+
+  @override
+  Future<Uint8List> descargar(String pacienteId, int mensajeId) => _api.getBytes(_ruta(pacienteId, 'archivos/$mensajeId'));
+
+  @override
   Future<void> cerrar(String pacienteId) async {
     await _api.post(_ruta(pacienteId, 'cerrar'));
   }
@@ -57,7 +81,32 @@ class HttpChatRepository implements ChatRepository {
 class MuestraChatRepository implements ChatRepository {
   final Map<String, List<MensajeChat>> _mensajes = {};
   final Map<String, bool> _cerrado = {};
+  final Map<int, Uint8List> _archivos = {};
   int _siguienteId = 1;
+
+  @override
+  Future<void> enviarArchivo(String pacienteId, RolChat emisor,
+      {required String nombre, required String tipo, required Uint8List bytes}) async {
+    if (_cerrado[pacienteId] ?? false) throw const ApiException('El paciente cerró el chat.');
+    final error = ReglasArchivo.validar(nombre, bytes.length);
+    if (error != null) throw ApiException(error);
+    final id = _siguienteId++;
+    _archivos[id] = bytes;
+    (_mensajes[pacienteId] ??= []).add(MensajeChat(
+      id: id,
+      emisor: emisor,
+      texto: 'Archivo: $nombre',
+      hora: DateTime.now(),
+      archivo: ArchivoAdjunto(nombre: nombre, tipo: tipo, tamano: bytes.length),
+    ));
+  }
+
+  @override
+  Future<Uint8List> descargar(String pacienteId, int mensajeId) async {
+    final bytes = _archivos[mensajeId];
+    if (bytes == null) throw const ApiException('El servidor respondió 404');
+    return bytes;
+  }
 
   @override
   Future<ConversacionChat> consultar(String pacienteId, {int desde = 0}) async {
@@ -82,6 +131,7 @@ class MuestraChatRepository implements ChatRepository {
   @override
   Future<void> cerrar(String pacienteId) async {
     _mensajes[pacienteId]?.clear();
+    _archivos.clear();
     _cerrado[pacienteId] = true;
   }
 

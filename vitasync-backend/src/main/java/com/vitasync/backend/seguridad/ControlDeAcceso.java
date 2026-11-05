@@ -59,7 +59,7 @@ public class ControlDeAcceso extends OncePerRequestFilter {
         String ruta = req.getRequestURI();
         boolean protegida = ruta.startsWith("/api/usuarios") || ruta.startsWith("/api/smartwatch")
                 || ruta.startsWith("/api/chat") || ruta.startsWith("/api/firmware") || ruta.startsWith("/api/contactos")
-                || ruta.startsWith("/api/metas");
+                || ruta.startsWith("/api/metas") || ruta.startsWith("/api/admin");
         boolean publica = "GET".equals(req.getMethod()) && "/api/firmware/ultima".equals(ruta);
         return !protegida || publica || "OPTIONS".equals(req.getMethod());
     }
@@ -85,6 +85,12 @@ public class ControlDeAcceso extends OncePerRequestFilter {
         }
         Identidad id = quien.get();
         req.setAttribute(ATRIBUTO, id);
+
+        // Gestión de roles: solo el administrador (Práctica 7).
+        if (req.getRequestURI().startsWith("/api/admin") && !id.esAdmin()) {
+            error(res, HttpServletResponse.SC_FORBIDDEN, "Solo el administrador puede hacer esto.");
+            return;
+        }
 
         String objetivo = cuentaObjetivo(req);
         if (objetivo != null && !id.esAdmin() && usuarios.isDisponible()) {
