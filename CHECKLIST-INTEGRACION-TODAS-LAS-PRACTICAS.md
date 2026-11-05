@@ -42,9 +42,10 @@ Pruebas al cierre, todas verdes: **backend 137 · app 184 (análisis sin avisos)
 3. ~~Actividad 1 (contactos de emergencia) dentro de VitaSync~~ — hecha el 4 de noviembre.
 4. ~~Práctica 9: conflictos de versión~~ — hecha el 4 de noviembre (metas compartidas entre paciente y médico). La Práctica 7 quedó en parte (ver abajo).
 5. ~~Práctica 2: justificar HTTP~~ — justificada (sección 10.15 del Parcial 2). Queda como trabajo futuro el Bluetooth con un reloj físico.
-6. Encender la seguridad por omisión cuando se decida (hoy está apagada en el servidor y en la app).
+6. Práctica 7: invitaciones por URL de un solo uso y probar los roles contra Firebase Authentication.
+7. Encender la seguridad por omisión cuando se decida (hoy está apagada en el servidor y en la app).
 
-**Límites que conviene tener presentes:** todo lo de Firebase se probó con emuladores, no con un proyecto en la nube; el servidor de pruebas acepta tokens sin firma del emulador; no se hizo ningún commit.
+**Límites que conviene tener presentes:** todo lo de Firebase se probó con emuladores, no con un proyecto en la nube; el servidor de pruebas acepta tokens sin firma del emulador; todo el trabajo está en el repositorio (rama master, último commit del 4 de noviembre), pero el CI nunca se ejecutó en GitHub.
 
 ---
 
@@ -89,10 +90,10 @@ El control de acceso sigue **apagado por omisión** (`vitasync.seguridad.activa:
 | Práctica 9 | Base compartida entre dispositivos | ✅ | El Resumen dice si los datos están confirmados por el servidor o vienen de la caché; el Chat guarda como «pendiente» lo que no se pudo enviar; y las **metas** las editan la paciente y su médico con control de versión (409 + diálogo «usar las del otro / sobrescribir»). Falta probar la transacción contra Firestore real
 | Práctica 10 | Autenticación y reglas de seguridad | ✅ | Correo/contraseña, UID en pantalla, dueño por cuenta, reglas de Firestore (17/17) y la app probada en emulador; solo en emuladores, no en la nube real |
 | Actividad 1 | Capturar, enviar y consultar en la nube | ✅ | Pestaña «Contactos» de emergencia: alta, lista y borrado guardados en Firestore (`usuarios/{cuenta}/contactos`), con validación en el servidor, máximo 5, sin teléfonos repetidos, control de dueño y reglas de Firestore |
-| Actividad 2 | Pirámide de pruebas | 🟡 | Diagnóstico en `PIRAMIDE-DE-PRUEBAS.md` (315 pruebas: 99 unitarias, 164 de integración, 52 de punta a punta, de las cuales **solo 1 usa la app real**) y CI escrito en `.github/workflows/pruebas.yml` (**validado como YAML, sin ejecutar todavía en GitHub**) |
+| Actividad 2 | Pirámide de pruebas | 🟡 | Diagnóstico en `PIRAMIDE-DE-PRUEBAS.md` (391 pruebas: 99 unitarias, 240 de integración, 52 de punta a punta, de las cuales **solo 1 usa la app real**) y CI escrito en `.github/workflows/pruebas.yml` (**validado como YAML, sin ejecutar todavía en GitHub**) |
 | Actividad 3 | Matriz de pruebas de Firestore | 🟡 | Aplicada a VitaSync en `vitasync-backend/MATRIZ-PRUEBAS-FIRESTORE.md` con repositorios en memoria y HTTP; **falta probarla contra Firestore** (eliminación de subcolecciones y persistencia del servidor) |
 
-**Resumen:** ✅ 7 · 🟡 5 · ❌ 1.
+**Resumen:** ✅ 8 · 🟡 5 · ❌ 0. Las cinco en amarillo (Prácticas 2, 5 y 7 y Actividades 2 y 3) tienen un pendiente concreto que se explica en su fila.
 
 ---
 
