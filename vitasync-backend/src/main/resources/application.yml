@@ -6,6 +6,13 @@ spring:
     name: vitasync-backend
   elasticsearch:
     uris: http://localhost:9200
+  data:
+    elasticsearch:
+      repositories:
+        # Elasticsearch es OPCIONAL y viene APAGADO: sin él el backend arranca igual (usuarios, reloj, chat, metas…
+        # no lo usan) y /api/search responde 503; el sitio web tiene su propio índice local. Para el buscador del
+        # servidor: Elasticsearch encendido (docker compose up) y --spring.data.elasticsearch.repositories.enabled=true
+        enabled: false
 
 logging:
   level:

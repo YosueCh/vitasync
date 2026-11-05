@@ -9,6 +9,10 @@ y versionado con [SemVer](https://semver.org/lang/es/) (`MAYOR.MENOR.PARCHE`):
 ## [Sin publicar] — Desarrollo Móvil Integral: vista móvil e integración de prácticas
 
 ### Cambiado
+- Elasticsearch es **opcional** y viene apagado: el backend completo arranca sin él (era lo que impedía correrlo contra
+  Firebase) y `/api/search` responde 503. Se activa con `--spring.data.elasticsearch.repositories.enabled=true`.
+  El backend real se probó contra Firebase de la nube con dos personas reales (14 comprobaciones, sin restos).
+- Guía `PROBAR-EN-CELULAR.md` para probar la app en un celular Android (contra el servidor de pruebas o contra Firebase).
 - Práctica 2: se decide mantener el reloj **simulado** (conexión por HTTP, sin Bluetooth ni hardware real); queda
   documentado como decisión de diseño y no como pendiente.
 - La seguridad (Práctica 10) está **encendida por omisión** en el servidor (`vitasync.seguridad.activa: true`),

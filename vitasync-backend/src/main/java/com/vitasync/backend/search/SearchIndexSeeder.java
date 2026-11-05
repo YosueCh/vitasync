@@ -3,6 +3,7 @@ package com.vitasync.backend.search;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -17,6 +18,7 @@ import java.util.List;
  * en cada reinicio de la aplicacion.
  */
 @Component
+@ConditionalOnProperty(name = "spring.data.elasticsearch.repositories.enabled", havingValue = "true")
 public class SearchIndexSeeder implements CommandLineRunner {
 
     private static final Logger log = LoggerFactory.getLogger(SearchIndexSeeder.class);
@@ -29,15 +31,22 @@ public class SearchIndexSeeder implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        long total = repository.count();
-        if (total > 0) {
-            log.info("Indice vitasync-content ya tiene {} documentos, se omite la siembra.", total);
-            return;
-        }
+        // Elasticsearch es OPCIONAL: sin él, el backend arranca igual (usuarios, reloj, chat, metas… no lo usan) y
+        // solo el buscador del servidor queda sin servicio; el sitio web tiene su propio índice local.
+        try {
+            long total = repository.count();
+            if (total > 0) {
+                log.info("Indice vitasync-content ya tiene {} documentos, se omite la siembra.", total);
+                return;
+            }
 
-        List<SearchDocument> contenido = contenidoInicial();
-        repository.saveAll(contenido);
-        log.info("Indice vitasync-content sembrado con {} documentos.", contenido.size());
+            List<SearchDocument> contenido = contenidoInicial();
+            repository.saveAll(contenido);
+            log.info("Indice vitasync-content sembrado con {} documentos.", contenido.size());
+        } catch (RuntimeException e) {
+            log.warn("Elasticsearch no está disponible ({}): el buscador del servidor (/api/search) responderá 503, "
+                    + "el resto del backend funciona normal.", e.getClass().getSimpleName());
+        }
     }
 
     private List<SearchDocument> contenidoInicial() {

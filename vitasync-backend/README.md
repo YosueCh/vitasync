@@ -4,7 +4,7 @@ Backend Spring Boot de VitaSync. Expone estos grupos de endpoints:
 
 | Grupo | Base | Respaldo | Estado |
 |---|---|---|---|
-| Búsqueda del sitio | `/api/search` | Elasticsearch | Funciona sin configuración adicional (solo necesita el contenedor de Elasticsearch corriendo) |
+| Búsqueda del sitio | `/api/search` | Elasticsearch | **Opcional y apagada por omisión**: sin activarla el backend arranca igual y `/api/search` responde `503` (el sitio usa su índice local). Se activa con Elasticsearch encendido y `--spring.data.elasticsearch.repositories.enabled=true` |
 | Enlace con smartwatch | `/api/smartwatch/*` | Cloud Firestore (Firebase) | Requiere `serviceAccountKey.json` propio (ver abajo); mientras no exista, responde `503`. Incluye el **historial de lecturas** (`/historial`) |
 | Chat médico-paciente (Práctica 6) | `/api/chat/{pacienteId}/*` | Memoria del servidor | No necesita Firebase. La conversación se borra cuando el paciente cierra el chat (o al reiniciar el servidor) |
 | Gestión de usuarios (Práctica 13) | `/api/usuarios/*` | Cloud Firestore (Firebase) | Mismo requisito que smartwatch; ver `docs/practica-13/Integracion-en-VitaSync.md` |
@@ -16,9 +16,11 @@ Ver también [`docs-elasticsearch/GUIA_ELASTICSEARCH.md`](docs-elasticsearch/GUI
 
 - JDK 21+
 - Maven (o abrir la carpeta en IntelliJ IDEA, que trae Maven integrado y detecta el `pom.xml` automáticamente)
-- Docker Desktop (para levantar Elasticsearch)
+- Docker Desktop (solo si quieres el buscador del servidor con Elasticsearch; es opcional)
 
-## 2. Levantar Elasticsearch
+## 2. Levantar Elasticsearch (opcional)
+
+Solo para el buscador del servidor. Sin esto el backend arranca igual. Para activarlo, además de levantar el contenedor, arranca con `mvn spring-boot:run "-Dspring-boot.run.arguments=--spring.data.elasticsearch.repositories.enabled=true"`.
 
 ```bash
 docker compose up -d

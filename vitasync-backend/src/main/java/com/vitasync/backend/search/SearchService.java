@@ -5,6 +5,7 @@ import org.springframework.data.elasticsearch.client.elc.NativeQuery;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.data.elasticsearch.core.SearchHit;
 import org.springframework.data.elasticsearch.core.SearchHits;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -15,6 +16,7 @@ import java.util.List;
  * mientras SearchService.MODO_LOCAL = true (ver search.service.ts).
  */
 @Service
+@ConditionalOnProperty(name = "spring.data.elasticsearch.repositories.enabled", havingValue = "true")
 public class SearchService {
 
     private static final int LIMITE_RESULTADOS = 8;

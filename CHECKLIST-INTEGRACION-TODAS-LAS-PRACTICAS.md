@@ -45,7 +45,7 @@ Pruebas al cierre, todas verdes: **backend 154 · app 189 (análisis sin avisos)
 6. Práctica 7: que el enlace de invitación abra la app directamente (hoy se escribe el código) y probar el adjuntar archivo en el emulador.
 7. ~~Encender la seguridad por omisión~~ — hecho el 5 de noviembre (servidor, app móvil y sitio Angular con inicio de sesión).
 
-**Límites que conviene tener presentes:** Firestore, Authentication y las reglas se probaron en la nube real, pero con pruebas de Java y REST: el recorrido de la app en el emulador de Android sigue siendo contra el servidor de pruebas (tokens del emulador, repositorios en memoria), y el backend completo (`VitasyncBackendApplication`) nunca arrancó contra la nube porque pide Elasticsearch. Todo el trabajo está en el repositorio (rama master) y el CI corre en GitHub.
+**Límites que conviene tener presentes:** Firestore, Authentication y las reglas se probaron en la nube real, pero con pruebas de Java y REST: el recorrido de la app en el emulador de Android sigue siendo contra el servidor de pruebas (tokens del emulador, repositorios en memoria), el backend completo (`VitasyncBackendApplication`) arrancó contra la nube el 5 de noviembre y se probó con personas reales (14 comprobaciones, sin restos; Elasticsearch ya es opcional). Todo el trabajo está en el repositorio (rama master) y el CI corre en GitHub.
 
 ---
 
