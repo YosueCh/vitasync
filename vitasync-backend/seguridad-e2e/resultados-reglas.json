@@ -1,0 +1,156 @@
+[
+  {
+    "id": "RV-01",
+    "descripcion": "Sin sesión: leer una cuenta",
+    "esperado": "RECHAZADO",
+    "obtenido": "RECHAZADO (403)",
+    "resultado": "PASA"
+  },
+  {
+    "id": "RV-02",
+    "descripcion": "Ana lee SU cuenta",
+    "esperado": "PERMITIDO",
+    "obtenido": "PERMITIDO (200)",
+    "resultado": "PASA"
+  },
+  {
+    "id": "RV-03",
+    "descripcion": "Ana lee la cuenta de Beto",
+    "esperado": "RECHAZADO",
+    "obtenido": "RECHAZADO (403)",
+    "resultado": "PASA"
+  },
+  {
+    "id": "RV-04",
+    "descripcion": "Ana lista TODAS las cuentas (sin filtro)",
+    "esperado": "RECHAZADO",
+    "obtenido": "RECHAZADO (403)",
+    "resultado": "PASA"
+  },
+  {
+    "id": "RV-05",
+    "descripcion": "Ana consulta con where propietarioUid == su UID",
+    "esperado": "PERMITIDO",
+    "obtenido": "PERMITIDO (200)",
+    "resultado": "PASA"
+  },
+  {
+    "id": "RV-06",
+    "descripcion": "Ana modifica SU propia cuenta desde el cliente",
+    "esperado": "RECHAZADO",
+    "obtenido": "RECHAZADO (403)",
+    "resultado": "PASA"
+  },
+  {
+    "id": "RV-07",
+    "descripcion": "Ana crea una cuenta a nombre de Beto (suplantación)",
+    "esperado": "RECHAZADO",
+    "obtenido": "RECHAZADO (403)",
+    "resultado": "PASA"
+  },
+  {
+    "id": "RV-08",
+    "descripcion": "Ana elimina la cuenta de Beto",
+    "esperado": "RECHAZADO",
+    "obtenido": "RECHAZADO (403)",
+    "resultado": "PASA"
+  },
+  {
+    "id": "RV-09",
+    "descripcion": "Ana elimina SU cuenta desde el cliente",
+    "esperado": "RECHAZADO",
+    "obtenido": "RECHAZADO (403)",
+    "resultado": "PASA"
+  },
+  {
+    "id": "RV-10",
+    "descripcion": "Ana lee SU reloj",
+    "esperado": "PERMITIDO",
+    "obtenido": "PERMITIDO (200)",
+    "resultado": "PASA"
+  },
+  {
+    "id": "RV-11",
+    "descripcion": "Beto lee el reloj de Ana",
+    "esperado": "RECHAZADO",
+    "obtenido": "RECHAZADO (403)",
+    "resultado": "PASA"
+  },
+  {
+    "id": "RV-12",
+    "descripcion": "Ana lee SU historial",
+    "esperado": "PERMITIDO",
+    "obtenido": "PERMITIDO (200)",
+    "resultado": "PASA"
+  },
+  {
+    "id": "RV-13",
+    "descripcion": "Beto lee el historial de Ana",
+    "esperado": "RECHAZADO",
+    "obtenido": "RECHAZADO (403)",
+    "resultado": "PASA"
+  },
+  {
+    "id": "RV-14",
+    "descripcion": "Ana inyecta lecturas falsas en su historial desde el cliente",
+    "esperado": "RECHAZADO",
+    "obtenido": "RECHAZADO (403)",
+    "resultado": "PASA"
+  },
+  {
+    "id": "RV-15",
+    "descripcion": "Ana lee una sesión de Smart TV (solo servidor)",
+    "esperado": "RECHAZADO",
+    "obtenido": "RECHAZADO (403)",
+    "resultado": "PASA"
+  },
+  {
+    "id": "RV-16",
+    "descripcion": "Ana escribe en una colección no prevista",
+    "esperado": "RECHAZADO",
+    "obtenido": "RECHAZADO (403)",
+    "resultado": "PASA"
+  },
+  {
+    "id": "RV-17",
+    "descripcion": "Sin sesión: escribir",
+    "esperado": "RECHAZADO",
+    "obtenido": "RECHAZADO (403)",
+    "resultado": "PASA"
+  },
+  {
+    "id": "RV-18",
+    "descripcion": "Ana lee SUS contactos de emergencia",
+    "esperado": "PERMITIDO",
+    "obtenido": "PERMITIDO (200)",
+    "resultado": "PASA"
+  },
+  {
+    "id": "RV-19",
+    "descripcion": "Beto lee los contactos de emergencia de Ana",
+    "esperado": "RECHAZADO",
+    "obtenido": "RECHAZADO (403)",
+    "resultado": "PASA"
+  },
+  {
+    "id": "RV-20",
+    "descripcion": "Ana agrega un contacto desde el cliente (solo el backend escribe)",
+    "esperado": "RECHAZADO",
+    "obtenido": "RECHAZADO (403)",
+    "resultado": "PASA"
+  },
+  {
+    "id": "RV-21",
+    "descripcion": "Sin sesión: leer contactos de emergencia",
+    "esperado": "RECHAZADO",
+    "obtenido": "RECHAZADO (403)",
+    "resultado": "PASA"
+  },
+  {
+    "id": "RV-22",
+    "descripcion": "Beto elimina un contacto de Ana",
+    "esperado": "RECHAZADO",
+    "obtenido": "RECHAZADO (403)",
+    "resultado": "PASA"
+  }
+]

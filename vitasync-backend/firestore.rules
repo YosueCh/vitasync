@@ -1,0 +1,57 @@
+rules_version = '2';
+
+// Reglas de seguridad de Firestore para VitaSync (Práctica 10 aplicada al proyecto).
+//
+// Contexto: hoy TODO el acceso a Firestore pasa por el backend, que usa el Admin SDK y por eso se salta estas
+// reglas; el control real (token + dueño de la cuenta) está en el filtro ControlDeAcceso. Estas reglas son la
+// SEGUNDA barrera: protegen los datos si algún día una app o una web accede directo con el SDK de cliente, o si
+// alguien consigue la clave pública del proyecto.
+//
+//   - Sin sesión (request.auth == null) no se lee ni se escribe nada.
+//   - Cada persona LEE solo lo suyo: usuarios con propietarioUid == su UID, y el reloj y su historial cuando la
+//     cuenta a la que pertenecen es suya.
+//   - NADIE escribe desde el cliente: altas, cambios, lecturas del reloj y PIN los valida y asigna el backend.
+//   - Todo lo demás (p. ej. tv_sessions) está cerrado: es de uso exclusivo del servidor.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function haySesion() {
+      return request.auth != null;
+    }
+
+    // ¿La cuenta VitaSync {cuentaId} es de la persona autenticada?
+    function esMiCuenta(cuentaId) {
+      return haySesion()
+        && exists(/databases/$(database)/documents/usuarios/$(cuentaId))
+        && get(/databases/$(database)/documents/usuarios/$(cuentaId)).data.propietarioUid == request.auth.uid;
+    }
+
+    match /usuarios/{cuentaId} {
+      // Un documento o una consulta con where propietarioUid == mi UID. Una consulta que pudiera traer cuentas
+      // ajenas se rechaza completa.
+      allow read: if haySesion() && resource.data.propietarioUid == request.auth.uid;
+      allow write: if false;
+
+      // Contactos de emergencia de la cuenta: solo los lee su dueño; los escribe el backend.
+      match /contactos/{contactoId} {
+        allow read: if esMiCuenta(cuentaId);
+        allow write: if false;
+      }
+    }
+
+    match /devices/{cuentaId} {
+      allow read: if esMiCuenta(cuentaId);
+      allow write: if false;
+
+      match /historial/{lecturaId} {
+        allow read: if esMiCuenta(cuentaId);
+        allow write: if false;
+      }
+    }
+
+    // Cualquier otra colección (tv_sessions, etc.): solo el servidor.
+    match /{otro=**} {
+      allow read, write: if false;
+    }
+  }
+}

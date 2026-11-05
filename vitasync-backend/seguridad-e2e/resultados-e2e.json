@@ -1,0 +1,210 @@
+{
+  "api": "http://localhost:8081/api",
+  "ana": "n0UKlgTj3KllqtJseWeA8apVR5R5",
+  "beto": "HLTEHtmPpwG9azVaavICE70ceT4p",
+  "filas": [
+    {
+      "id": "E2E-01",
+      "descripcion": "Listar cuentas sin token",
+      "esperado": "401",
+      "obtenido": "401",
+      "resultado": "PASA"
+    },
+    {
+      "id": "E2E-02",
+      "descripcion": "Token inventado",
+      "esperado": "401",
+      "obtenido": "401",
+      "resultado": "PASA"
+    },
+    {
+      "id": "E2E-03",
+      "descripcion": "Ana crea su cuenta VitaSync",
+      "esperado": "200",
+      "obtenido": "200",
+      "resultado": "PASA"
+    },
+    {
+      "id": "E2E-04",
+      "descripcion": "Beto crea su cuenta VitaSync",
+      "esperado": "200",
+      "obtenido": "200",
+      "resultado": "PASA"
+    },
+    {
+      "id": "E2E-05",
+      "descripcion": "Ana lista cuentas: solo ve la suya",
+      "esperado": "200",
+      "obtenido": "200",
+      "resultado": "PASA"
+    },
+    {
+      "id": "E2E-06",
+      "descripcion": "Alta con datos vacíos (D-01)",
+      "esperado": "400",
+      "obtenido": "400",
+      "resultado": "PASA"
+    },
+    {
+      "id": "E2E-07",
+      "descripcion": "Alta con usuario repetido (D-02)",
+      "esperado": "409",
+      "obtenido": "409",
+      "resultado": "PASA"
+    },
+    {
+      "id": "E2E-08",
+      "descripcion": "Beto intenta leer, cambiar y borrar TODO lo de Ana (11 intentos)",
+      "esperado": "11 × 403",
+      "obtenido": "403,403,403,403,403,403,403,403,403,403,403",
+      "resultado": "PASA"
+    },
+    {
+      "id": "E2E-09",
+      "descripcion": "La cuenta de Ana sigue intacta y habilitada",
+      "esperado": "200",
+      "obtenido": "200",
+      "resultado": "PASA"
+    },
+    {
+      "id": "E2E-10",
+      "descripcion": "Ana vincula su reloj y recibe una clave de dispositivo",
+      "esperado": "200",
+      "obtenido": "200",
+      "resultado": "PASA"
+    },
+    {
+      "id": "E2E-11",
+      "descripcion": "El estado del reloj NO vuelve a mostrar la clave",
+      "esperado": "200",
+      "obtenido": "200",
+      "resultado": "PASA"
+    },
+    {
+      "id": "E2E-12",
+      "descripcion": "El firmware envía una lectura con su clave (sin token de persona)",
+      "esperado": "200",
+      "obtenido": "200",
+      "resultado": "PASA"
+    },
+    {
+      "id": "E2E-13",
+      "descripcion": "Firmware con clave inventada",
+      "esperado": "401",
+      "obtenido": "401",
+      "resultado": "PASA"
+    },
+    {
+      "id": "E2E-14",
+      "descripcion": "La clave del reloj de Ana no sirve para la cuenta de Beto",
+      "esperado": "401",
+      "obtenido": "401",
+      "resultado": "PASA"
+    },
+    {
+      "id": "E2E-15",
+      "descripcion": "La clave de dispositivo no abre las métricas (eso es de la persona)",
+      "esperado": "401",
+      "obtenido": "401",
+      "resultado": "PASA"
+    },
+    {
+      "id": "E2E-16",
+      "descripcion": "Firmware consulta su orden de actualización con la clave",
+      "esperado": "200",
+      "obtenido": "200",
+      "resultado": "PASA"
+    },
+    {
+      "id": "E2E-17",
+      "descripcion": "Ana ve la lectura que mandó su reloj",
+      "esperado": "200",
+      "obtenido": "200",
+      "resultado": "PASA"
+    },
+    {
+      "id": "E2E-18",
+      "descripcion": "Beto no ve las métricas de Ana",
+      "esperado": "403",
+      "obtenido": "403",
+      "resultado": "PASA"
+    },
+    {
+      "id": "E2E-19",
+      "descripcion": "Ana escribe en su chat",
+      "esperado": "200",
+      "obtenido": "200",
+      "resultado": "PASA"
+    },
+    {
+      "id": "E2E-20",
+      "descripcion": "Ana lee su chat",
+      "esperado": "200",
+      "obtenido": "200",
+      "resultado": "PASA"
+    },
+    {
+      "id": "E2E-21",
+      "descripcion": "Ana guarda un contacto de emergencia (el teléfono se normaliza)",
+      "esperado": "200",
+      "obtenido": "200",
+      "resultado": "PASA"
+    },
+    {
+      "id": "E2E-22",
+      "descripcion": "Ana consulta sus contactos",
+      "esperado": "200",
+      "obtenido": "200",
+      "resultado": "PASA"
+    },
+    {
+      "id": "E2E-23",
+      "descripcion": "Mismo teléfono con otro formato: rechazado",
+      "esperado": "409",
+      "obtenido": "409",
+      "resultado": "PASA"
+    },
+    {
+      "id": "E2E-24",
+      "descripcion": "Contacto con datos vacíos: rechazado",
+      "esperado": "400",
+      "obtenido": "400",
+      "resultado": "PASA"
+    },
+    {
+      "id": "E2E-25",
+      "descripcion": "Beto intenta ver, agregar y borrar contactos de Ana",
+      "esperado": "3 × 403",
+      "obtenido": "403,403,403",
+      "resultado": "PASA"
+    },
+    {
+      "id": "E2E-26",
+      "descripcion": "Beto, con su propia cuenta, ve su lista vacía (no la de Ana)",
+      "esperado": "200",
+      "obtenido": "200",
+      "resultado": "PASA"
+    },
+    {
+      "id": "E2E-27",
+      "descripcion": "Sin token no se puede consultar ningún contacto",
+      "esperado": "401",
+      "obtenido": "401",
+      "resultado": "PASA"
+    },
+    {
+      "id": "E2E-28",
+      "descripcion": "Ana elimina su contacto",
+      "esperado": "200",
+      "obtenido": "200",
+      "resultado": "PASA"
+    },
+    {
+      "id": "E2E-29",
+      "descripcion": "Eliminar otra vez el mismo contacto: no existe",
+      "esperado": "404",
+      "obtenido": "404",
+      "resultado": "PASA"
+    }
+  ]
+}

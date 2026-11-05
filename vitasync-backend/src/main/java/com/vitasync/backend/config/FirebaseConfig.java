@@ -7,6 +7,7 @@ import com.google.firebase.FirebaseOptions;
 import com.google.firebase.cloud.FirestoreClient;
 import com.vitasync.backend.cast.repository.CastSessionRepository;
 import com.vitasync.backend.smartwatch.repository.DispositivoRepository;
+import com.vitasync.backend.smartwatch.repository.HistorialMetricasRepository;
 import com.vitasync.backend.usuarios.repository.UsuarioRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -72,8 +73,18 @@ public class FirebaseConfig {
     }
 
     @Bean
+    public HistorialMetricasRepository historialMetricasRepository(Optional<Firestore> firestore) {
+        return firestore.map(HistorialMetricasRepository::new).orElse(null);
+    }
+
+    @Bean
     public UsuarioRepository usuarioRepository(Optional<Firestore> firestore) {
         return firestore.map(UsuarioRepository::new).orElse(null);
+    }
+
+    @Bean
+    public com.vitasync.backend.contactos.ContactoRepository contactoRepository(Optional<Firestore> firestore) {
+        return firestore.map(com.vitasync.backend.contactos.ContactoRepository::new).orElse(null);
     }
 
     @Bean

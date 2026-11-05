@@ -36,6 +36,16 @@ public class DispositivoRepository {
         }
     }
 
+    /** Elimina el dispositivo de la cuenta (no falla si no existe). */
+    public void eliminar(String usuarioId) {
+        try {
+            db.collection(COLECCION).document(usuarioId).delete().get();
+        } catch (InterruptedException | ExecutionException e) {
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException("Error al eliminar en Firestore", e);
+        }
+    }
+
     /** Devuelve el dispositivo del usuario dado, o null si nunca se ha conectado uno. */
     public Dispositivo buscarPorUsuario(String usuarioId) {
         try {

@@ -19,8 +19,27 @@ public class Usuario {
     private String fechaCreacion; // ISO-8601
     private String ultimoInicioSesion; // ISO-8601, null si nunca ha iniciado sesión
 
+    // PIN de la vista móvil (Parcial 2). Nunca se guarda el PIN: solo un salt
+    // aleatorio y SHA-256(salt:pin). Ninguno de estos campos sale en UsuarioDTO.
+    private String pinSalt; // hex de 16 bytes aleatorios, null si no hay PIN
+    private String pinHash; // hex de SHA-256("salt:pin"), null si no hay PIN
+    private int pinIntentosFallidos;
+    private String pinBloqueadoHasta; // ISO-8601, null si no está bloqueada
+
+    // Práctica 10: UID de Firebase Authentication de la persona dueña de esta cuenta.
+    // null = cuenta sin dueño (sembrada antes de activar la seguridad): solo un administrador la ve.
+    private String propietarioUid;
+
     public Usuario() {
     } // requerido por Firestore
+
+    public String getPropietarioUid() {
+        return propietarioUid;
+    }
+
+    public void setPropietarioUid(String propietarioUid) {
+        this.propietarioUid = propietarioUid;
+    }
 
     public String getId() {
         return id;
@@ -84,5 +103,37 @@ public class Usuario {
 
     public void setUltimoInicioSesion(String ultimoInicioSesion) {
         this.ultimoInicioSesion = ultimoInicioSesion;
+    }
+
+    public String getPinSalt() {
+        return pinSalt;
+    }
+
+    public void setPinSalt(String pinSalt) {
+        this.pinSalt = pinSalt;
+    }
+
+    public String getPinHash() {
+        return pinHash;
+    }
+
+    public void setPinHash(String pinHash) {
+        this.pinHash = pinHash;
+    }
+
+    public int getPinIntentosFallidos() {
+        return pinIntentosFallidos;
+    }
+
+    public void setPinIntentosFallidos(int pinIntentosFallidos) {
+        this.pinIntentosFallidos = pinIntentosFallidos;
+    }
+
+    public String getPinBloqueadoHasta() {
+        return pinBloqueadoHasta;
+    }
+
+    public void setPinBloqueadoHasta(String pinBloqueadoHasta) {
+        this.pinBloqueadoHasta = pinBloqueadoHasta;
     }
 }

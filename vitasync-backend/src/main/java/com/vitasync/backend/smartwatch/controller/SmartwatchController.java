@@ -40,7 +40,17 @@ public class SmartwatchController {
     /** GET /api/smartwatch/metrics?usuarioId=... */
     @GetMapping("/metrics")
     public ResponseEntity<?> metrics(@RequestParam String usuarioId) {
-        return conFirebase(() -> service.metricas(usuarioId));
+        if (!service.isDisponible()) return conFirebase(() -> null); // 503
+        // 204 si la cuenta aún no tiene lecturas: no se inventan datos (D-05).
+        return service.metricas(usuarioId).<ResponseEntity<?>>map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.noContent().build());
+    }
+
+    /** GET /api/smartwatch/historial?usuarioId=...&limite=30: lecturas guardadas, la más reciente primero. */
+    @GetMapping("/historial")
+    public ResponseEntity<?> historial(@RequestParam String usuarioId,
+                                       @RequestParam(defaultValue = "30") int limite) {
+        return conFirebase(() -> service.historial(usuarioId, limite));
     }
 
     private ResponseEntity<?> conFirebase(java.util.function.Supplier<?> accion) {

@@ -15,8 +15,20 @@ public class Dispositivo {
     private String estado;       // CONECTADO / DESCONECTADO
     private String ultimaSync;   // ISO-8601 (Firestore mapea String de forma nativa)
 
+    // Práctica 10: el firmware se identifica con una clave propia del dispositivo (no con el token de una
+    // persona). Solo se guarda SHA-256 de la clave; la clave en claro se entrega una vez, al conectar.
+    private String claveHash;
+
     public Dispositivo() {
     } // requerido por Firestore
+
+    public String getClaveHash() {
+        return claveHash;
+    }
+
+    public void setClaveHash(String claveHash) {
+        this.claveHash = claveHash;
+    }
 
     public String getId() {
         return id;

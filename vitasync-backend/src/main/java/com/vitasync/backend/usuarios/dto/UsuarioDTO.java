@@ -10,5 +10,6 @@ public record UsuarioDTO(
         boolean habilitado,
         boolean requiereCambioPassword,
         String fechaCreacion,
-        String ultimoInicioSesion) {
+        String ultimoInicioSesion,
+        boolean tienePin) {
 }

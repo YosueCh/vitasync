@@ -33,7 +33,7 @@ class SmartwatchServiceTest {
         MetasDTO resultado = service.sincronizar("u1", vacio);
         assertThat(resultado).isNotNull();
 
-        MetricasDTO guardado = service.metricas("u1");
+        MetricasDTO guardado = service.metricas("u1").orElseThrow();
         assertThat(guardado.timestamp()).isNotNull();
         assertThat(guardado.pasos()).isGreaterThan(0);
     }
@@ -47,7 +47,7 @@ class SmartwatchServiceTest {
         MetricasDTO real = new MetricasDTO(9999, 500, 7.5, 70, 80, Instant.now());
         service.sincronizar("u2", real);
 
-        assertThat(service.metricas("u2").pasos()).isEqualTo(9999);
+        assertThat(service.metricas("u2").orElseThrow().pasos()).isEqualTo(9999);
     }
 
     @Test
@@ -58,7 +58,7 @@ class SmartwatchServiceTest {
         service.sincronizar("alumno1", new MetricasDTO(1111, 111, 1.1, 60, 50, Instant.now()));
         service.sincronizar("alumno2", new MetricasDTO(2222, 222, 2.2, 70, 60, Instant.now()));
 
-        assertThat(service.metricas("alumno1").pasos()).isEqualTo(1111);
-        assertThat(service.metricas("alumno2").pasos()).isEqualTo(2222);
+        assertThat(service.metricas("alumno1").orElseThrow().pasos()).isEqualTo(1111);
+        assertThat(service.metricas("alumno2").orElseThrow().pasos()).isEqualTo(2222);
     }
 }
