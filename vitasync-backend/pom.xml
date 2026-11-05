@@ -19,6 +19,8 @@
 
     <properties>
         <java.version>21</java.version>
+        <!-- Emulador de Authentication para las pruebas; con la nube real se pasa vacío: -Dfirebase.auth.emulator.host= -->
+        <firebase.auth.emulator.host>localhost:9099</firebase.auth.emulator.host>
     </properties>
 
     <dependencies>
@@ -67,7 +69,7 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
                     <environmentVariables>
-                        <FIREBASE_AUTH_EMULATOR_HOST>localhost:9099</FIREBASE_AUTH_EMULATOR_HOST>
+                        <FIREBASE_AUTH_EMULATOR_HOST>${firebase.auth.emulator.host}</FIREBASE_AUTH_EMULATOR_HOST>
                     </environmentVariables>
                 </configuration>
             </plugin>

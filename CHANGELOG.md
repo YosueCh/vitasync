@@ -9,6 +9,10 @@ y versionado con [SemVer](https://semver.org/lang/es/) (`MAYOR.MENOR.PARCHE`):
 ## [Sin publicar] — Desarrollo Móvil Integral: vista móvil e integración de prácticas
 
 ### Añadido
+- `FirestoreRealTest`: los repositorios probados contra el Firestore real del proyecto (cascada de borrado con
+  subcolecciones, persistencia con un cliente nuevo, transacciones de metas e invitaciones). No corre con
+  `mvn test`: se activa con `-Dfirestore.real=true`. La variable del emulador de Authentication de las pruebas
+  ahora es la propiedad `firebase.auth.emulator.host` (vacía para usar la nube).
 - Invitaciones de un solo uso con rol (Práctica 7): `POST/GET /api/admin/invitaciones` y
   `POST /api/invitaciones/canjear`; código de 8 caracteres, 7 días, canje en transacción y máximo 5 intentos
   fallidos cada 15 minutos. En la app: botón «Tengo un código» y «Generar código» en Roles. 13 pruebas del

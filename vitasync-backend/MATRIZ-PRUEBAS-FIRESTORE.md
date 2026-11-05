@@ -27,14 +27,23 @@ Fecha: 4 de noviembre de 2026.
 - **D-04** (TC05): al eliminar una cuenta quedaban el reloj, el historial y el chat huérfanos. Ahora `UsuarioService.eliminar` invoca la limpieza de cada parte antes de borrar la cuenta.
 - **D-05** (TC06): una cuenta sin lecturas veía valores inventados; ahora el servidor responde 204.
 
-## Lo que NO está verificado y por qué
+## Verificación contra Firestore REAL (5 de noviembre de 2026)
 
-Se intentó probar los repositorios de VitaSync (`UsuarioRepository`, `DispositivoRepository`, `HistorialMetricasRepository`) contra el emulador de Firestore desde Java, para demostrar TC05 con subcolecciones y TC08 con un cliente nuevo. **No se logró**: el cliente de Java no pudo comunicarse con el emulador en este equipo (el emulador registra «Detected non-HTTP/2 connection» con cuatro configuraciones distintas del cliente) y se retiró la prueba en vez de dejarla siempre omitida.
+Con la clave de servicio del proyecto de Firebase se corrió `FirestoreRealTest` (6 pruebas, todas pasan, 41 s) contra el Firestore de la nube —no un emulador— usando los repositorios reales de VitaSync. Todo lo que crea lleva el prefijo `zz-prueba-` y se borra al terminar; después se comprobó por REST que no quedó ningún resto y que no se tocó ningún documento previo.
 
-Por eso quedan sin demostrar contra Firestore:
-- que `HistorialMetricasRepository.eliminarTodo` borre de verdad todos los documentos de la subcolección (Firestore no los borra solo);
-- que las cuentas, relojes y lecturas guardados por el servidor persistan tras un reinicio.
+| Caso | Qué se demostró contra Firestore real |
+|---|---|
+| TC01 Alta | La cuenta se guarda con su dueña y se lee de vuelta |
+| TC04 Actualización | Metas: guardar con versión sube la versión; un segundo guardado con la versión vieja da conflicto y devuelve lo actual |
+| TC05 Eliminación | Cuenta con contactos (subcolección), metas, reloj y 3 lecturas de historial: al eliminarla desaparece todo y no queda ningún documento en las subcolecciones. **Esto era lo que no se había podido demostrar** |
+| TC08 Persistencia | Un repositorio nuevo (otra instancia del cliente) lee los contactos y las metas guardados por el primero; el historial vuelve ordenado, la lectura más reciente primero |
+| Transacciones | Dos guardados de metas con la misma versión a la vez: pasa exactamente uno y el otro recibe el conflicto (la versión final es 1). Dos personas canjeando el mismo código de invitación a la vez: lo canjea solo una. Invitación caducada o inexistente: se rechaza |
 
-Esos dos puntos sí se probaron con Firestore real en la Actividad 3 (la app ReportesApp contra el emulador, TC05 y TC08), pero allí el código de acceso a datos es el de esa app, no el de VitaSync.
+Para repetirlo: `mvn test -Dtest=FirestoreRealTest -Dfirestore.real=true -Dfirebase.auth.emulator.host=` (el último parámetro es importante: si la variable del emulador de Authentication está puesta, el cliente de Java falla con UNAUTHENTICATED contra la nube).
 
-**Siguiente paso recomendado:** probar esos dos puntos arrancando el backend real contra el emulador de Firestore con la variable `FIRESTORE_EMULATOR_HOST` y revisando los documentos desde la interfaz del emulador, o directamente con el proyecto de Firebase de la nube.
+## Lo que sigue sin verificar
+
+- **Reiniciar el backend completo** y ver los datos: lo que se probó es leer con un cliente nuevo; los datos viven en la nube, así que sobreviven por construcción, pero no se hizo la prueba literal de apagar y volver a encender.
+- **TC07 contra Firestore real**: la pérdida de conexión solo se probó con fallos simulados.
+- **Las reglas de seguridad publicadas en la nube** (`firestore.rules`): se probaron 22 casos con el emulador, pero no se comprobó que las reglas desplegadas en el proyecto sean esas. El servidor entra con la clave de servicio y las salta, así que estas pruebas no las ejercitan.
+- **La firma real de los tokens de Authentication** de la nube (el método Correo y contraseña tiene que estar activado en la consola).

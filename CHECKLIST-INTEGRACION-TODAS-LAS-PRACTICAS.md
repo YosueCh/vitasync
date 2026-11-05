@@ -37,7 +37,7 @@ Pruebas al cierre, todas verdes: **backend 154 · app 189 (análisis sin avisos)
 **Defectos de la Práctica 8:** corregidos los seis. D-06 (detalles de interfaz) con una salvedad: tres de sus cuatro detalles se corrigieron y se probaron por comportamiento y posición; el cuarto (espera de ~12 s sin servidor) no se pudo reproducir porque el código ya limita la espera a 4 s, y ese límite quedó protegido con una prueba. **El orden de las cuentas y la posición del botón conviene mirarlos a simple vista en un emulador.**
 
 **Lo que queda, en orden de prioridad:**
-1. Probar los repositorios contra Firestore (borrado real de subcolecciones y persistencia del servidor): no se pudo con el cliente de Java y el emulador; probar el backend real con `FIRESTORE_EMULATOR_HOST` o con el proyecto de Firebase de la nube. Ahí mismo, probar la firma real de los tokens.
+1. ~~Probar los repositorios contra Firestore~~ — hecho el 5 de noviembre contra el Firestore real del proyecto (6 pruebas, sin restos). Sigue pendiente la firma real de los tokens de Authentication de la nube (hay que activar «Correo y contraseña» en la consola) y comprobar que las reglas publicadas en la nube son las de `firestore.rules`.
 2. ~~Actividad 2: ejecutar el CI en GitHub y las pruebas de Angular~~ — hecho (5 corridas en verde; Angular 3/3). Sigue pendiente ampliar las pruebas con la app real (hoy es un solo recorrido; ver `PIRAMIDE-DE-PRUEBAS.md`).
 3. ~~Actividad 1 (contactos de emergencia) dentro de VitaSync~~ — hecha el 4 de noviembre.
 4. ~~Práctica 9: conflictos de versión~~ — hecha el 4 de noviembre (metas compartidas entre paciente y médico). La Práctica 7 quedó en parte (ver abajo).
@@ -45,7 +45,7 @@ Pruebas al cierre, todas verdes: **backend 154 · app 189 (análisis sin avisos)
 6. Práctica 7: que el enlace de invitación abra la app directamente (hoy se escribe el código) y probar el adjuntar archivo en el emulador.
 7. Encender la seguridad por omisión cuando se decida (hoy está apagada en el servidor y en la app).
 
-**Límites que conviene tener presentes:** todo lo de Firebase se probó con emuladores, no con un proyecto en la nube; el servidor de pruebas acepta tokens sin firma del emulador; todo el trabajo está en el repositorio (rama master, último commit del 4 de noviembre), pero el CI nunca se ejecutó en GitHub.
+**Límites que conviene tener presentes:** lo de Authentication y las reglas se probó con emuladores; solo los repositorios de Firestore se probaron en la nube real. El servidor de pruebas acepta tokens sin firma del emulador. Todo el trabajo está en el repositorio (rama master) y el CI corre en GitHub.
 
 ---
 
@@ -91,9 +91,9 @@ El control de acceso sigue **apagado por omisión** (`vitasync.seguridad.activa:
 | Práctica 10 | Autenticación y reglas de seguridad | ✅ | Correo/contraseña, UID en pantalla, dueño por cuenta, reglas de Firestore (17/17) y la app probada en emulador; solo en emuladores, no en la nube real |
 | Actividad 1 | Capturar, enviar y consultar en la nube | ✅ | Pestaña «Contactos» de emergencia: alta, lista y borrado guardados en Firestore (`usuarios/{cuenta}/contactos`), con validación en el servidor, máximo 5, sin teléfonos repetidos, control de dueño y reglas de Firestore |
 | Actividad 2 | Pirámide de pruebas | 🟡 | Diagnóstico en `PIRAMIDE-DE-PRUEBAS.md` (413 pruebas: 99 unitarias, 262 de integración, 52 de punta a punta, de las cuales **solo 1 usa la app real**) y CI escrito en `.github/workflows/pruebas.yml` (**ejecutado en GitHub: 5 corridas en verde**) |
-| Actividad 3 | Matriz de pruebas de Firestore | 🟡 | Aplicada a VitaSync en `vitasync-backend/MATRIZ-PRUEBAS-FIRESTORE.md` con repositorios en memoria y HTTP; **falta probarla contra Firestore** (eliminación de subcolecciones y persistencia del servidor) |
+| Actividad 3 | Matriz de pruebas de Firestore | ✅ | Aplicada a VitaSync en `vitasync-backend/MATRIZ-PRUEBAS-FIRESTORE.md` con repositorios en memoria y HTTP, **y contra el Firestore real** (`FirestoreRealTest`: cascada con subcolecciones, persistencia con un cliente nuevo y transacciones). Falta probar la pérdida de conexión (TC07) y el reinicio literal del backend |
 
-**Resumen:** ✅ 9 · 🟡 4 · ❌ 0. Las cuatro en amarillo (Prácticas 2 y 5 y Actividades 2 y 3) tienen un pendiente concreto que se explica en su fila.
+**Resumen:** ✅ 10 · 🟡 3 · ❌ 0. Las tres en amarillo (Prácticas 2 y 5 y Actividad 2) tienen un pendiente concreto que se explica en su fila.
 
 ---
 
@@ -126,7 +126,7 @@ Tamaño: **S** = unas horas · **M** = una sesión larga · **L** = varias sesio
 - [x] Cuenta sin lecturas muestra «Aún no hay lecturas» y la caché **no guarda** valores inventados (D-05): el servidor responde 204 en vez de inventar datos; app y web lo toleran (5 pruebas nuevas en la app, 1 reescrita y 2 nuevas en el backend)
 - [x] Caché en **SQLite real** (`sqflite`) sin cambiar el contrato `MetricaDao`; la web conserva `shared_preferences`. 11 pruebas nuevas (migración, persistencia, límite por cuenta, consultas parametrizadas) y verificado en el emulador de Android
 - [x] Indicador de estado (Práctica 9): Resumen «Confirmado por el servidor» / «caché del teléfono»; Chat con mensajes **pendientes** que se reenvían solos y en orden (6 pruebas nuevas). Pendiente: conflictos de versión
-- [~] Matriz TC01–TC08 de la Actividad 3 aplicada a VitaSync (`MATRIZ-PRUEBAS-FIRESTORE.md`): TC01–TC07 verificados con repositorios en memoria y en la app; **pendiente contra Firestore**: borrado real de subcolecciones y persistencia del servidor. Se intentó con el cliente de Java y el emulador y no se logró (el emulador rechaza la conexión) — probar arrancando el backend real con `FIRESTORE_EMULATOR_HOST` o con la nube
+- [x] Matriz TC01–TC08 de la Actividad 3 aplicada a VitaSync (y probada contra Firestore real el 5 de noviembre) (`MATRIZ-PRUEBAS-FIRESTORE.md`): TC01–TC07 verificados con repositorios en memoria y en la app; **pendiente contra Firestore**: borrado real de subcolecciones y persistencia del servidor. Se intentó con el cliente de Java y el emulador y no se logró (el emulador rechaza la conexión) — probar arrancando el backend real con `FIRESTORE_EMULATOR_HOST` o con la nube
 
 **Listo cuando:** los 8 casos pasan, con la base verificada directamente (no solo por la pantalla).
 
