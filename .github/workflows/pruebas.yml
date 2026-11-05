@@ -1,0 +1,112 @@
+# Ejecución automática de las pruebas de VitaSync (Actividad 2: que las pruebas corran solas, no solo cuando alguien se acuerda).
+#
+# - En cada push y en cada pull request: pruebas del backend, de la app móvil y del firmware simulado.
+# - La prueba de punta a punta de seguridad (dos personas reales contra el backend con los emuladores de Firebase)
+#   corre en los mismos eventos, después de las del backend.
+# - La prueba de la app en un emulador de Android NO corre aquí: necesita un emulador y es lenta. Se ejecuta a mano
+#   antes de entregar (ver vitasync-frontend/flutter-mobile-app/README.md).
+#
+# Los pasos reproducen los comandos que se ejecutaron en la computadora del proyecto. Este archivo se validó
+# como YAML, pero NO se ha ejecutado todavía en GitHub Actions: la primera corrida puede pedir ajustes.
+name: Pruebas
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: pruebas-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    name: Backend (JUnit)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+      - name: Pruebas del backend
+        working-directory: vitasync-backend
+        run: mvn -B test
+
+  firmware:
+    name: Firmware simulado (dart test)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dart-lang/setup-dart@v1
+        with:
+          sdk: '3.9.2'
+      - name: Pruebas del firmware
+        working-directory: vitasync-firmware-sim
+        run: |
+          dart pub get
+          dart test
+
+  app:
+    name: App móvil (flutter analyze y test)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: SQLite del sistema (lo usan las pruebas del DAO)
+        run: sudo apt-get update && sudo apt-get install -y libsqlite3-dev
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.35.7'
+          channel: stable
+          cache: true
+      - name: Análisis y pruebas de la app
+        working-directory: vitasync-frontend/flutter-mobile-app
+        run: |
+          flutter pub get
+          flutter analyze
+          flutter test
+
+  seguridad-e2e:
+    name: Seguridad de punta a punta (Authentication + Firestore + backend)
+    needs: backend
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Herramientas de Firebase
+        run: npm install -g firebase-tools
+      - name: Emuladores de Authentication y Firestore
+        run: |
+          printf '{ "emulators": { "auth": { "host": "127.0.0.1", "port": 9099 }, "firestore": { "host": "127.0.0.1", "port": 8085 }, "ui": { "enabled": false }, "singleProjectMode": true } }' > "$RUNNER_TEMP/firebase.json"
+          cd "$RUNNER_TEMP"
+          nohup firebase emulators:start --only auth,firestore --project demo-vitasync > emuladores.log 2>&1 &
+          for i in $(seq 1 60); do grep -q "All emulators ready" emuladores.log && exit 0; sleep 2; done
+          cat emuladores.log
+          exit 1
+      - name: Backend de pruebas con la seguridad activada
+        working-directory: vitasync-backend
+        run: |
+          mvn -B -q test-compile
+          nohup mvn -B spring-boot:run \
+            -Dspring-boot.run.useTestClasspath=true \
+            -Dspring-boot.run.directories=target/test-classes \
+            -Dspring-boot.run.main-class=com.vitasync.backend.blackbox.ServidorPruebas \
+            "-Dspring-boot.run.arguments=--vitasync.seguridad.activa=true" > "$RUNNER_TEMP/backend.log" 2>&1 &
+          for i in $(seq 1 60); do curl -s -o /dev/null http://localhost:8081/api/firmware/ultima && exit 0; sleep 2; done
+          cat "$RUNNER_TEMP/backend.log"
+          exit 1
+      - name: Prueba de punta a punta (personas reales del emulador de Authentication)
+        working-directory: vitasync-backend
+        run: node seguridad-e2e/prueba-seguridad.mjs
+      - name: Reglas de Firestore
+        working-directory: vitasync-backend
+        run: node seguridad-e2e/prueba-reglas.mjs
