@@ -19,23 +19,40 @@ export class Acceso {
 
   readonly correo = signal('');
   readonly clave = signal('');
+  readonly repetir = signal('');
+  /** false = «Ya tengo cuenta» (entrar); true = «Soy nuevo» (crear cuenta, repitiendo la contraseña). */
+  readonly crearModo = signal(false);
   readonly error = signal<string | null>(null);
   readonly trabajando = signal(false);
   readonly sesion = this.auth.sesion;
   readonly vencida = this.ruta.snapshot.queryParamMap.get('vencida') === '1';
 
-  escribir(campo: 'correo' | 'clave', evento: Event): void {
-    (campo === 'correo' ? this.correo : this.clave).set((evento.target as HTMLInputElement).value);
+  escribir(campo: 'correo' | 'clave' | 'repetir', evento: Event): void {
+    const valor = (evento.target as HTMLInputElement).value;
+    if (campo === 'correo') this.correo.set(valor);
+    else if (campo === 'clave') this.clave.set(valor);
+    else this.repetir.set(valor);
     this.error.set(null);
   }
 
-  entrar(evento?: Event): void {
-    evento?.preventDefault();
-    this.enviar(this.auth.iniciarSesion(this.correo().trim(), this.clave()));
+  cambiarModo(crear: boolean): void {
+    this.crearModo.set(crear);
+    this.repetir.set('');
+    this.error.set(null);
   }
 
-  crear(): void {
-    this.enviar(this.auth.registrarse(this.correo().trim(), this.clave()));
+  /** Envía el formulario según el modo: entrar con una cuenta existente o crear una nueva. */
+  enviarFormulario(evento?: Event): void {
+    evento?.preventDefault();
+    if (this.crearModo()) {
+      if (this.clave() !== this.repetir()) {
+        this.error.set('Las contraseñas no coinciden.');
+        return;
+      }
+      this.enviar(this.auth.registrarse(this.correo().trim(), this.clave()));
+    } else {
+      this.enviar(this.auth.iniciarSesion(this.correo().trim(), this.clave()));
+    }
   }
 
   salir(): void {
@@ -54,6 +71,7 @@ export class Acceso {
       next: () => {
         this.trabajando.set(false);
         this.clave.set('');
+        this.repetir.set('');
         const destino = this.ruta.snapshot.queryParamMap.get('volver');
         // Solo rutas internas (nunca un enlace a otro sitio).
         void this.router.navigateByUrl(destino && destino.startsWith('/') && !destino.startsWith('//') ? destino : '/dashboard');

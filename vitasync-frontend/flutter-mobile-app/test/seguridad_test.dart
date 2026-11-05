@@ -323,6 +323,80 @@ void main() {
       expect(autenticado, isTrue);
       expect(find.byKey(const Key('error-acceso')), findsNothing);
     });
+
+    // «Entrar» y «Crear cuenta» son dos modos distintos de la pantalla, no dos botones del mismo formulario.
+    Future<_CorreoFalso> abrir(WidgetTester tester, {String? falla}) async {
+      final servicio = _CorreoFalso(falla: falla);
+      await tester.pumpWidget(MaterialApp(
+        home: LoginCorreoScreen(servicio: servicio, onAutenticado: () {}),
+      ));
+      return servicio;
+    }
+
+    testWidgets('al abrir es «Entrar»: sin repetir la contraseña y con un solo botón principal', (tester) async {
+      await abrir(tester);
+      expect(find.text('Inicia sesión con tu correo'), findsOneWidget);
+      expect(find.byKey(const Key('btn-entrar')), findsOneWidget);
+      expect(find.byKey(const Key('btn-crear-cuenta')), findsNothing);
+      expect(find.byKey(const Key('campo-clave-repetir')), findsNothing);
+    });
+
+    testWidgets('«Soy nuevo» cambia el título, pide repetir la contraseña y el botón dice «Crear mi cuenta»', (tester) async {
+      await abrir(tester);
+      await tester.tap(find.text('Soy nuevo'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Crea tu cuenta'), findsOneWidget);
+      expect(find.byKey(const Key('campo-clave-repetir')), findsOneWidget);
+      expect(find.text('Mínimo 6 caracteres'), findsOneWidget);
+      expect(find.text('Crear mi cuenta'), findsOneWidget);
+      expect(find.byKey(const Key('btn-entrar')), findsNothing);
+    });
+
+    testWidgets('al crear, si las contraseñas no coinciden se avisa y no se llama a Firebase', (tester) async {
+      final servicio = await abrir(tester);
+      await tester.tap(find.text('Soy nuevo'));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byKey(const Key('campo-correo')), 'nuevo@uteq.test');
+      await tester.enterText(find.byKey(const Key('campo-clave')), 'Clave123');
+      await tester.enterText(find.byKey(const Key('campo-clave-repetir')), 'Clave124');
+      await tester.tap(find.byKey(const Key('btn-crear-cuenta')));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Las contraseñas no coinciden.'), findsOneWidget);
+      expect(servicio.entradas, 0);
+    });
+
+    testWidgets('al crear con las contraseñas iguales se registra', (tester) async {
+      final servicio = await abrir(tester);
+      await tester.tap(find.text('Soy nuevo'));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byKey(const Key('campo-correo')), 'nuevo@uteq.test');
+      await tester.enterText(find.byKey(const Key('campo-clave')), 'Clave123');
+      await tester.enterText(find.byKey(const Key('campo-clave-repetir')), 'Clave123');
+      await tester.tap(find.byKey(const Key('btn-crear-cuenta')));
+      await tester.pumpAndSettle();
+
+      expect(servicio.entradas, 1);
+      expect(servicio.sesion?.correo, 'nuevo@uteq.test');
+    });
+
+    testWidgets('volver a «Ya tengo cuenta» quita la confirmación y limpia el error', (tester) async {
+      await abrir(tester);
+      await tester.tap(find.text('Soy nuevo'));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byKey(const Key('campo-clave')), 'a');
+      await tester.enterText(find.byKey(const Key('campo-clave-repetir')), 'b');
+      await tester.tap(find.byKey(const Key('btn-crear-cuenta')));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('error-acceso')), findsOneWidget);
+
+      await tester.tap(find.text('Ya tengo cuenta'));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('error-acceso')), findsNothing);
+      expect(find.byKey(const Key('campo-clave-repetir')), findsNothing);
+      expect(find.byKey(const Key('btn-entrar')), findsOneWidget);
+    });
   });
 
   group('La app con la seguridad activa', () {

@@ -4,29 +4,53 @@
     <p id="acceso-sesion">Estás dentro como <strong>{{ s.correo }}</strong>.</p>
     <button type="button" class="btn btn-primary" id="acceso-salir" (click)="salir()">Cerrar sesión</button>
   } @else {
-    <h1>Iniciar sesión</h1>
-    <p class="acceso__ayuda">Entra con tu correo y contraseña para ver tus cuentas, tu reloj y tus datos de salud.</p>
+    <h1 id="acceso-titulo">{{ crearModo() ? 'Crea tu cuenta' : 'Iniciar sesión' }}</h1>
+    <p class="acceso__ayuda">
+      @if (crearModo()) {
+        Elige un correo y una contraseña (mínimo 6 caracteres) para empezar.
+      } @else {
+        Entra con tu correo y contraseña para ver tus cuentas, tu reloj y tus datos de salud.
+      }
+    </p>
+
+    <div class="acceso__modos" role="tablist" aria-label="Tipo de acceso">
+      <button type="button" role="tab" id="acceso-modo-entrar" [attr.aria-selected]="!crearModo()"
+              [class.is-activo]="!crearModo()" (click)="cambiarModo(false)">Ya tengo cuenta</button>
+      <button type="button" role="tab" id="acceso-modo-crear" [attr.aria-selected]="crearModo()"
+              [class.is-activo]="crearModo()" (click)="cambiarModo(true)">Soy nuevo</button>
+    </div>
 
     @if (vencida) {
       <p class="acceso__aviso" role="status" id="acceso-vencida">Tu sesión venció. Vuelve a iniciar sesión.</p>
     }
 
-    <form (submit)="entrar($event)" novalidate>
+    <form (submit)="enviarFormulario($event)" novalidate>
       <label for="acceso-correo">Correo</label>
       <input id="acceso-correo" type="email" name="correo" autocomplete="email"
              [value]="correo()" (input)="escribir('correo', $event)" />
 
       <label for="acceso-clave">Contraseña</label>
-      <input id="acceso-clave" type="password" name="clave" autocomplete="current-password"
+      <input id="acceso-clave" type="password" name="clave"
+             [attr.autocomplete]="crearModo() ? 'new-password' : 'current-password'"
              [value]="clave()" (input)="escribir('clave', $event)" />
+
+      @if (crearModo()) {
+        <label for="acceso-repetir">Repite la contraseña</label>
+        <input id="acceso-repetir" type="password" name="repetir" autocomplete="new-password"
+               [value]="repetir()" (input)="escribir('repetir', $event)" />
+      }
 
       @if (error()) {
         <p class="acceso__error" role="alert" id="acceso-error">{{ error() }}</p>
       }
 
       <div class="acceso__botones">
-        <button type="submit" class="btn btn-primary" id="acceso-entrar" [disabled]="trabajando()">Entrar</button>
-        <button type="button" class="btn" id="acceso-crear" [disabled]="trabajando()" (click)="crear()">Crear cuenta</button>
+        <!-- Un solo botón principal, con el nombre de lo que va a pasar según el modo. -->
+        @if (crearModo()) {
+          <button type="submit" class="btn btn-primary" id="acceso-crear" [disabled]="trabajando()">Crear mi cuenta</button>
+        } @else {
+          <button type="submit" class="btn btn-primary" id="acceso-entrar" [disabled]="trabajando()">Entrar</button>
+        }
       </div>
     </form>
   }

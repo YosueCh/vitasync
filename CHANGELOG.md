@@ -9,6 +9,10 @@ y versionado con [SemVer](https://semver.org/lang/es/) (`MAYOR.MENOR.PARCHE`):
 ## [Sin publicar] — Desarrollo Móvil Integral: vista móvil e integración de prácticas
 
 ### Cambiado
+- Acceso con correo (app móvil y sitio web): «Entrar» y «Crear cuenta» ahora son dos modos distintos
+  («Ya tengo cuenta» / «Soy nuevo»). En modo nuevo cambia el título, aparece «Repite la contraseña» con el aviso de
+  mínimo 6 caracteres, el botón dice «Crear mi cuenta» y no se llama a Firebase si las contraseñas no coinciden.
+  Antes eran dos botones del mismo formulario y se confundían. 5 pruebas nuevas en la app y 2 en el sitio.
 - Elasticsearch es **opcional** y viene apagado: el backend completo arranca sin él (era lo que impedía correrlo contra
   Firebase) y `/api/search` responde 503. Se activa con `--spring.data.elasticsearch.repositories.enabled=true`.
   El backend real se probó contra Firebase de la nube con dos personas reales (14 comprobaciones, sin restos).
