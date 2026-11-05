@@ -41,7 +41,7 @@ Pruebas al cierre, todas verdes: **backend 137 · app 184 (análisis sin avisos)
 2. Actividad 2: ejecutar el CI de verdad en GitHub (hoy solo está escrito), sumar las pruebas de Angular y ampliar las pruebas con la app real (ver `PIRAMIDE-DE-PRUEBAS.md`).
 3. ~~Actividad 1 (contactos de emergencia) dentro de VitaSync~~ — hecha el 4 de noviembre.
 4. ~~Práctica 9: conflictos de versión~~ — hecha el 4 de noviembre (metas compartidas entre paciente y médico). La Práctica 7 quedó en parte (ver abajo).
-5. Práctica 2: Bluetooth (o justificar HTTP).
+5. ~~Práctica 2: justificar HTTP~~ — justificada (sección 10.15 del Parcial 2). Queda como trabajo futuro el Bluetooth con un reloj físico.
 6. Encender la seguridad por omisión cuando se decida (hoy está apagada en el servidor y en la app).
 
 **Límites que conviene tener presentes:** todo lo de Firebase se probó con emuladores, no con un proyecto en la nube; el servidor de pruebas acepta tokens sin firma del emulador; no se hizo ningún commit.
@@ -79,7 +79,7 @@ El control de acceso sigue **apagado por omisión** (`vitasync.seguridad.activa:
 | Tarea | De qué trata | Estado | Cómo está hoy en VitaSync |
 |---|---|---|---|
 | Práctica 1 | Firmware (LED, botón) | ✅ | `vitasync-firmware-sim/` y pantalla Dispositivo |
-| Práctica 2 | Sensor + Bluetooth | 🟡 | Sensor simulado, pero las lecturas viajan por HTTP; **no hay Bluetooth** |
+| Práctica 2 | Sensor + Bluetooth | 🟡 | **Justificada, no implementada:** el reloj simulado manda sus lecturas por HTTP al servidor (nota de diseño en el Parcial 2, sección 10.15). No hay Bluetooth ni hardware real en VitaSync |
 | Práctica 3 | Consumir una URL | ✅ | `ApiCliente` y URL separada en `api_config.dart` |
 | Práctica 4 | Base local (Room/SQLite) | ✅ | SQLite real en Android e iOS (`MetricaDaoSqlite`: índice, transacción, consultas parametrizadas y migración 1→2); en la web `localStorage`. Es solo una caché: la única fuente de verdad es Firestore |
 | Práctica 5 | Código seguro | 🟡 | PIN con hash, bloqueo, inactividad; ahora también token, dueño por cuenta y clave de dispositivo, **pero apagados por omisión** |
@@ -134,7 +134,7 @@ Tamaño: **S** = unas horas · **M** = una sesión larga · **L** = varias sesio
 - [x] **Práctica 9 dentro de VitaSync:** «Metas» (pasos, calorías, sueño) que editan la paciente y su médico, con control de versión: si el segundo guarda con una versión vieja el servidor responde 409 y la app ofrece «usar las del otro» o «sobrescribir con las mías». 16 pruebas del servidor y 16 de la app. **No probado:** la transacción contra Firestore real ni el flujo en el emulador de Android
 - [x] **Actividad 1 dentro de VitaSync:** «Contactos de emergencia» (capturar, guardar en la nube y consultar): 12 pruebas del servidor, 17 de la app, 9 casos de punta a punta, 5 de reglas y la pestaña probada en el emulador de Android
 - [x] **Práctica 7 (en parte):** el administrador asigna roles a varias personas de un solo envío (`PUT /api/admin/roles`: se valida todo el lote antes de cambiar nada; solo «paciente» y «médico»; no se toca a un administrador) y el chat envía archivos (PNG, JPG, PDF o TXT hasta 300 KB, con el contenido verificado en el servidor). 18 pruebas del servidor y 17 de la app. **No hecho:** invitaciones por URL de un solo uso, nombrar administrador desde la app, reparto atómico de roles (Firebase no lo ofrece), abrir PDF dentro de la app, y probar los roles contra Firebase Authentication real
-- [ ] **Práctica 2:** Bluetooth (BLE) reloj → teléfono, o una nota de diseño que justifique usar HTTP
+- [x] **Práctica 2 (justificada):** nota de diseño de por qué el reloj sincroniza por HTTP con el servidor y no por Bluetooth con el teléfono. **No se implementó Bluetooth**; con un reloj físico sería el enlace reloj → teléfono
 
 ### Etapa 4 — Calidad (cubre P8 y Actividad 2) · tamaño M
 
