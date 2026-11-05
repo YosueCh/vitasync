@@ -9,6 +9,12 @@ y versionado con [SemVer](https://semver.org/lang/es/) (`MAYOR.MENOR.PARCHE`):
 ## [Sin publicar] — Desarrollo Móvil Integral: vista móvil e integración de prácticas
 
 ### Añadido
+- Invitaciones de un solo uso con rol (Práctica 7): `POST/GET /api/admin/invitaciones` y
+  `POST /api/invitaciones/canjear`; código de 8 caracteres, 7 días, canje en transacción y máximo 5 intentos
+  fallidos cada 15 minutos. En la app: botón «Tengo un código» y «Generar código» en Roles. 13 pruebas del
+  servidor y 4 contra Firebase Authentication (emulador).
+- `--dart-define=API_PORT` para elegir el puerto del backend; el recorrido de integración en Android ahora cubre
+  metas con una médica real, el selector del chat y la pestaña Roles.
 - Práctica 7 dentro de VitaSync: roles en lote y archivos en el chat. `GET /api/admin/personas` y
   `PUT /api/admin/roles` (solo administrador; el lote se valida completo antes de aplicarse; solo paciente y
   médico). `POST /api/chat/{id}/archivos` y `GET .../archivos/{mensaje}` con PNG, JPG, PDF o TXT de hasta 300 KB,

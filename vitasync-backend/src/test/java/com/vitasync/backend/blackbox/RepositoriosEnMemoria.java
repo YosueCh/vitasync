@@ -115,6 +115,46 @@ public final class RepositoriosEnMemoria {
         }
     }
 
+    /** Invitaciones en memoria; canjear es atómico (equivale a la transacción de Firestore). */
+    public static class Invitaciones extends com.vitasync.backend.admin.InvitacionRepository {
+        private final Map<String, Invitacion> datos = new ConcurrentHashMap<>();
+
+        public Invitaciones() {
+            super(null);
+        }
+
+        @Override
+        public void guardar(Invitacion i) {
+            datos.put(i.codigo(), i);
+        }
+
+        @Override
+        public java.util.List<Invitacion> listar() {
+            return new java.util.ArrayList<>(datos.values());
+        }
+
+        @Override
+        public java.util.Optional<Invitacion> obtener(String codigo) {
+            return java.util.Optional.ofNullable(datos.get(codigo));
+        }
+
+        @Override
+        public synchronized Invitacion canjear(String codigo, String uid, long ahora) {
+            Invitacion a = datos.get(codigo);
+            if (a == null) throw new InvitacionInvalidaException("Ese código no existe.");
+            if (a.usadaPor() != null) throw new InvitacionInvalidaException("Ese código ya se usó.");
+            if (ahora > a.venceEn()) throw new InvitacionInvalidaException("Ese código caducó.");
+            Invitacion usada = new Invitacion(a.codigo(), a.rol(), a.creadaEn(), a.venceEn(), uid);
+            datos.put(codigo, usada);
+            return usada;
+        }
+
+        /** Para pruebas: una invitación ya caducada. */
+        public void sembrar(Invitacion i) {
+            datos.put(i.codigo(), i);
+        }
+    }
+
     /** Roles en memoria: el servidor de pruebas arranca con una administradora de prueba. */
     public static class Roles implements com.vitasync.backend.admin.GestorDeRoles {
         private final Map<String, Persona> personas = new java.util.concurrent.ConcurrentHashMap<>();

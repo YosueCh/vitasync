@@ -32,6 +32,8 @@ service cloud.firestore {
       allow read: if haySesion() && resource.data.propietarioUid == request.auth.uid;
       allow write: if false;
 
+      // (Las invitaciones de rol viven en «invitaciones/{codigo}», fuera de usuarios: ver más abajo.)
+
       // Metas de la cuenta (preferencias/metas): las lee su dueño; las escribe el backend (con control de versión).
       match /preferencias/{documento} {
         allow read: if esMiCuenta(cuentaId);

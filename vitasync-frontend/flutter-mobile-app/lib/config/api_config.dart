@@ -13,7 +13,8 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 class ApiConfig {
   ApiConfig._();
 
-  static const int puertoBackend = 8081;
+  /// Puerto del backend. Por omisión 8081; se cambia con --dart-define=API_PORT=8082 (p. ej. para probar otra copia).
+  static const int puertoBackend = int.fromEnvironment('API_PORT', defaultValue: 8081);
   static const Duration intervaloSondeo = Duration(seconds: 3);
 
   /// Cada cuánto el chat pide mensajes nuevos al backend (Práctica 6).

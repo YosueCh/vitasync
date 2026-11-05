@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../models/usuario.dart';
+import '../services/api_cliente.dart';
 import '../services/chat_repository.dart';
 import '../services/contactos_repository.dart';
 import '../services/firmware_repository.dart';
@@ -61,6 +62,41 @@ class ShellScreen extends StatefulWidget {
 class _ShellScreenState extends State<ShellScreen> {
   int _indice = 0;
 
+  /// Canjea un código de invitación: el servidor cambia el rol de la persona; lo adopta al renovar su sesión.
+  Future<void> _canjearCodigo() async {
+    // No se libera a mano: el diálogo sigue en pantalla unos instantes al cerrarse y usaría un controlador ya liberado.
+    final controlador = TextEditingController();
+    final codigo = await showDialog<String>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Código de invitación'),
+        content: TextField(
+          key: const Key('campo-codigo'),
+          controller: controlador,
+          textCapitalization: TextCapitalization.characters,
+          decoration: const InputDecoration(labelText: 'Código de 8 caracteres'),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancelar')),
+          FilledButton(
+            key: const Key('canjear-codigo'),
+            onPressed: () => Navigator.pop(context, controlador.text),
+            child: const Text('Canjear'),
+          ),
+        ],
+      ),
+    );
+    if (codigo == null || codigo.trim().isEmpty || !mounted) return;
+    String mensaje;
+    try {
+      final rol = await widget.roles!.canjear(codigo);
+      mensaje = 'Listo: ahora eres ${rolesAsignables[rol] ?? rol}. Cierra sesión y vuelve a entrar para que se aplique.';
+    } on ApiException catch (e) {
+      mensaje = e.mensaje;
+    }
+    if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(mensaje)));
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -76,6 +112,13 @@ class _ShellScreenState extends State<ShellScreen> {
           ],
         ),
         actions: [
+          if (widget.roles != null)
+            IconButton(
+              key: const Key('tengo-codigo'),
+              onPressed: _canjearCodigo,
+              icon: const Icon(Icons.vpn_key_outlined),
+              tooltip: 'Tengo un código de invitación',
+            ),
           IconButton(
             onPressed: widget.onCerrarSesion,
             icon: const Icon(Icons.logout),

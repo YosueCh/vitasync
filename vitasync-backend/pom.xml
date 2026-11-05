@@ -60,6 +60,17 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
+            <plugin>
+                <!-- Las pruebas que usan Firebase Authentication de verdad (FirebaseGestorDeRolesEmuladorTest) apuntan al
+                     emulador local; si no está encendido, esas pruebas se omiten solas. -->
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <environmentVariables>
+                        <FIREBASE_AUTH_EMULATOR_HOST>localhost:9099</FIREBASE_AUTH_EMULATOR_HOST>
+                    </environmentVariables>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 </project>

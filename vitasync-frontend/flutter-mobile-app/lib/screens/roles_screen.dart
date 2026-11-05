@@ -17,6 +17,8 @@ class RolesScreen extends StatefulWidget {
 
 class _RolesScreenState extends State<RolesScreen> {
   List<PersonaRol>? _personas;
+  List<InvitacionRol> _invitaciones = const [];
+  String _rolInvitacion = 'medico';
   String? _error;
   String? _aviso;
   bool _aplicando = false;
@@ -34,7 +36,13 @@ class _RolesScreenState extends State<RolesScreen> {
     setState(() => _error = null);
     try {
       final lista = await widget.repositorio.listar();
-      if (mounted) setState(() => _personas = lista);
+      final invitaciones = await widget.repositorio.listarInvitaciones();
+      if (mounted) {
+        setState(() {
+          _personas = lista;
+          _invitaciones = invitaciones;
+        });
+      }
     } on ApiException catch (e) {
       if (mounted) setState(() => _error = e.mensaje);
     } on Exception {
@@ -52,6 +60,21 @@ class _RolesScreenState extends State<RolesScreen> {
       }
       _aviso = null;
     });
+  }
+
+  Future<void> _crearInvitacion() async {
+    try {
+      final i = await widget.repositorio.crearInvitacion(_rolInvitacion);
+      final todas = await widget.repositorio.listarInvitaciones();
+      if (mounted) {
+        setState(() {
+          _invitaciones = todas;
+          _aviso = 'Código para ${rolesAsignables[i.rol]}: ${i.codigo} (un solo uso, caduca en 7 días). Entrégaselo a la persona.';
+        });
+      }
+    } on ApiException catch (e) {
+      if (mounted) setState(() => _aviso = e.mensaje);
+    }
   }
 
   Future<void> _aplicar() async {
@@ -120,6 +143,40 @@ class _RolesScreenState extends State<RolesScreen> {
               const SizedBox(height: 4),
               Text('Elige el rol de cada persona y aplica todos los cambios juntos.',
                   style: Theme.of(context).textTheme.bodySmall),
+              const SizedBox(height: 8),
+              Card(
+                key: const Key('invitaciones'),
+                margin: const EdgeInsets.only(top: 12, bottom: 4),
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Invitaciones de un solo uso', style: Theme.of(context).textTheme.titleSmall),
+                      const SizedBox(height: 4),
+                      Row(children: [
+                        DropdownButton<String>(
+                          key: const Key('rol-invitacion'),
+                          value: _rolInvitacion,
+                          items: [
+                            for (final e in rolesAsignables.entries) DropdownMenuItem(value: e.key, child: Text(e.value)),
+                          ],
+                          onChanged: (r) => setState(() => _rolInvitacion = r ?? _rolInvitacion),
+                        ),
+                        const SizedBox(width: 12),
+                        FilledButton.tonal(
+                          key: const Key('crear-invitacion'),
+                          onPressed: _crearInvitacion,
+                          child: const Text('Generar código'),
+                        ),
+                      ]),
+                      for (final i in _invitaciones)
+                        Text('${i.codigo} · ${rolesAsignables[i.rol] ?? i.rol} · ${i.usada ? 'usado' : 'libre'}',
+                            key: Key('invitacion-${i.codigo}')),
+                    ],
+                  ),
+                ),
+              ),
               const SizedBox(height: 8),
               for (final p in personas)
                 ListTile(

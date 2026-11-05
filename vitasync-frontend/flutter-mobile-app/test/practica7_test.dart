@@ -9,6 +9,9 @@ import 'package:vitasync_mobile/models/mensaje_chat.dart';
 import 'package:vitasync_mobile/models/usuario.dart';
 import 'package:vitasync_mobile/screens/chat_screen.dart';
 import 'package:vitasync_mobile/screens/roles_screen.dart';
+import 'package:vitasync_mobile/screens/shell_screen.dart';
+import 'package:vitasync_mobile/services/firmware_repository.dart';
+import 'package:vitasync_mobile/services/salud_repository.dart';
 import 'package:vitasync_mobile/services/api_cliente.dart';
 import 'package:vitasync_mobile/services/chat_repository.dart';
 import 'package:vitasync_mobile/services/roles_repository.dart';
@@ -217,6 +220,85 @@ void main() {
       await t.pumpAndSettle();
       expect((await repo.listar()).where((p) => p.rol == 'medico'), hasLength(2));
       expect(find.textContaining('2 rol(es) asignado(s)'), findsOneWidget);
+    });
+
+    testWidgets('el administrador genera un código y aparece en la lista como libre', (t) async {
+      final repo = MuestraRolesRepository();
+      await t.pumpWidget(MaterialApp(home: Scaffold(body: RolesScreen(repositorio: repo))));
+      await t.pumpAndSettle();
+      await t.tap(find.byKey(const Key('crear-invitacion')));
+      await t.pumpAndSettle();
+      expect(find.byKey(const Key('invitacion-MUESTRA1')), findsOneWidget);
+      expect(find.textContaining('MUESTRA1 · Médico · libre'), findsOneWidget);
+      expect(find.textContaining('caduca en 7 días'), findsOneWidget);
+    });
+
+    test('Muestra: un código sirve una vez y uno inventado no existe', () async {
+      final repo = MuestraRolesRepository();
+      final i = await repo.crearInvitacion('medico');
+      expect(await repo.canjear(i.codigo.toLowerCase()), 'medico');
+      await expectLater(repo.canjear(i.codigo), throwsA(isA<ApiException>()));
+      await expectLater(repo.canjear('NOEXISTE'), throwsA(isA<ApiException>()));
+      await expectLater(repo.crearInvitacion('admin'), throwsA(isA<ApiException>()));
+      expect((await repo.listarInvitaciones()).single.usada, isTrue);
+    });
+
+    test('HTTP: crear, listar y canjear usan las rutas de invitaciones', () async {
+      final vistos = <String>[];
+      final repo = HttpRolesRepository(
+          api: ApiCliente(baseUrl: 'http://x/api', cliente: MockClient((r) async {
+        vistos.add('${r.method} ${r.url.path}');
+        final inv = {'codigo': 'ABCD2345', 'rol': 'medico', 'venceEn': 1900000000000, 'usadaPor': null};
+        if (r.url.path.endsWith('canjear')) return _json({'rol': 'medico'});
+        return r.method == 'GET' ? _json([inv]) : _json(inv);
+      })));
+      expect((await repo.crearInvitacion('medico')).codigo, 'ABCD2345');
+      expect((await repo.listarInvitaciones()).single.usada, isFalse);
+      expect(await repo.canjear('ABCD2345'), 'medico');
+      expect(vistos, ['POST /api/admin/invitaciones', 'GET /api/admin/invitaciones', 'POST /api/invitaciones/canjear']);
+    });
+
+    testWidgets('en la app: con roles aparece «Roles» y el botón del código; canjear avisa el rol nuevo', (t) async {
+      t.view.physicalSize = const Size(390 * 3, 844 * 3);
+      t.view.devicePixelRatio = 3;
+      addTearDown(t.view.reset);
+      final roles = MuestraRolesRepository();
+      final i = await roles.crearInvitacion('medico');
+      await t.pumpWidget(MaterialApp(
+        home: ShellScreen(
+          cuenta: _ana,
+          repositorio: const MuestraSaludRepository(),
+          firmware: MuestraFirmwareRepository(),
+          chat: MuestraChatRepository(),
+          usuarios: _Usuarios(),
+          roles: roles,
+          onCerrarSesion: () {},
+        ),
+      ));
+      await t.pumpAndSettle();
+      expect(find.text('Roles'), findsOneWidget);
+      await t.tap(find.byKey(const Key('tengo-codigo')));
+      await t.pumpAndSettle();
+      await t.enterText(find.byKey(const Key('campo-codigo')), i.codigo);
+      await t.tap(find.byKey(const Key('canjear-codigo')));
+      await t.pumpAndSettle();
+      expect(find.textContaining('ahora eres Médico'), findsOneWidget);
+    });
+
+    testWidgets('en la app: sin repositorio de roles no hay pestaña ni botón de código', (t) async {
+      await t.pumpWidget(MaterialApp(
+        home: ShellScreen(
+          cuenta: _ana,
+          repositorio: const MuestraSaludRepository(),
+          firmware: MuestraFirmwareRepository(),
+          chat: MuestraChatRepository(),
+          usuarios: _Usuarios(),
+          onCerrarSesion: () {},
+        ),
+      ));
+      await t.pumpAndSettle();
+      expect(find.text('Roles'), findsNothing);
+      expect(find.byKey(const Key('tengo-codigo')), findsNothing);
     });
 
     testWidgets('sin cambios el botón está desactivado', (t) async {

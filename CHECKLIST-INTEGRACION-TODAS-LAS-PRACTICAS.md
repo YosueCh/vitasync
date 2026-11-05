@@ -30,19 +30,19 @@ Falta al abrir el proyecto por primera vez: `flutter pub get` en `vitasync-front
 
 ## Estado final de esta ronda (4 de noviembre de 2026)
 
-Pruebas al cierre, todas verdes: **backend 137 · app 184 (análisis sin avisos) · firmware 15**, más la prueba de integración de la app real en el emulador de Android, 29 casos de seguridad de punta a punta y 22 de reglas de Firestore.
+Pruebas al cierre, todas verdes: **backend 154 · app 189 (análisis sin avisos) · firmware 15 · web (Angular) 3**, más la prueba de integración de la app real en el emulador de Android (ahora también metas con una médica real, selector del chat y pestaña Roles), 29 casos de seguridad de punta a punta y 22 de reglas de Firestore. **El CI de GitHub ya corre: las 5 corridas de esta ronda salieron en verde.**
 
-**Integrado y probado:** Prácticas 1, 3, 4 (SQLite real), 5, 6, 8 y 10 y la Actividad 1 (contactos de emergencia); Práctica 9 (indicador de estado, mensajes pendientes y metas compartidas paciente–médico con control de versión) y Práctica 7 en parte (roles en lote y archivos en el chat); Actividad 3 en parte.
+**Integrado y probado:** Prácticas 1, 3, 4 (SQLite real), 5, 6, 8 y 10 y la Actividad 1 (contactos de emergencia); Práctica 9 (indicador de estado, mensajes pendientes y metas compartidas paciente–médico con control de versión) y Práctica 7 (roles en lote, invitaciones de un solo uso y archivos en el chat); Actividad 3 en parte.
 
 **Defectos de la Práctica 8:** corregidos los seis. D-06 (detalles de interfaz) con una salvedad: tres de sus cuatro detalles se corrigieron y se probaron por comportamiento y posición; el cuarto (espera de ~12 s sin servidor) no se pudo reproducir porque el código ya limita la espera a 4 s, y ese límite quedó protegido con una prueba. **El orden de las cuentas y la posición del botón conviene mirarlos a simple vista en un emulador.**
 
 **Lo que queda, en orden de prioridad:**
 1. Probar los repositorios contra Firestore (borrado real de subcolecciones y persistencia del servidor): no se pudo con el cliente de Java y el emulador; probar el backend real con `FIRESTORE_EMULATOR_HOST` o con el proyecto de Firebase de la nube. Ahí mismo, probar la firma real de los tokens.
-2. Actividad 2: ejecutar el CI de verdad en GitHub (hoy solo está escrito), sumar las pruebas de Angular y ampliar las pruebas con la app real (ver `PIRAMIDE-DE-PRUEBAS.md`).
+2. ~~Actividad 2: ejecutar el CI en GitHub y las pruebas de Angular~~ — hecho (5 corridas en verde; Angular 3/3). Sigue pendiente ampliar las pruebas con la app real (hoy es un solo recorrido; ver `PIRAMIDE-DE-PRUEBAS.md`).
 3. ~~Actividad 1 (contactos de emergencia) dentro de VitaSync~~ — hecha el 4 de noviembre.
 4. ~~Práctica 9: conflictos de versión~~ — hecha el 4 de noviembre (metas compartidas entre paciente y médico). La Práctica 7 quedó en parte (ver abajo).
 5. ~~Práctica 2: justificar HTTP~~ — justificada (sección 10.15 del Parcial 2). Queda como trabajo futuro el Bluetooth con un reloj físico.
-6. Práctica 7: invitaciones por URL de un solo uso y probar los roles contra Firebase Authentication.
+6. Práctica 7: que el enlace de invitación abra la app directamente (hoy se escribe el código) y probar el adjuntar archivo en el emulador.
 7. Encender la seguridad por omisión cuando se decida (hoy está apagada en el servidor y en la app).
 
 **Límites que conviene tener presentes:** todo lo de Firebase se probó con emuladores, no con un proyecto en la nube; el servidor de pruebas acepta tokens sin firma del emulador; todo el trabajo está en el repositorio (rama master, último commit del 4 de noviembre), pero el CI nunca se ejecutó en GitHub.
@@ -85,15 +85,15 @@ El control de acceso sigue **apagado por omisión** (`vitasync.seguridad.activa:
 | Práctica 4 | Base local (Room/SQLite) | ✅ | SQLite real en Android e iOS (`MetricaDaoSqlite`: índice, transacción, consultas parametrizadas y migración 1→2); en la web `localStorage`. Es solo una caché: la única fuente de verdad es Firestore |
 | Práctica 5 | Código seguro | 🟡 | PIN con hash, bloqueo, inactividad; ahora también token, dueño por cuenta y clave de dispositivo, **pero apagados por omisión** |
 | Práctica 6 | Dos dispositivos conversando | ✅ | Chat médico-paciente por el backend |
-| Práctica 7 | Roles masivos y archivos | 🟡 | Roles en lote por el administrador y archivos en el chat, con pruebas. Faltan invitaciones por URL y probar contra Firebase Authentication real
+| Práctica 7 | Roles masivos y archivos | ✅ | Roles en lote, invitaciones de un solo uso y archivos en el chat; roles probados contra Firebase Authentication (emulador). Falta el enlace que abre la app y probar el adjuntar en el emulador
 | Práctica 8 | Pruebas de caja negra | ✅ | Documento entregado. Los 6 defectos están corregidos (D-06 con la salvedad de arriba). Caja negra del backend: 22 de 23 (falla TC-20 porque ese servidor corre sin seguridad) |
 | Práctica 9 | Base compartida entre dispositivos | ✅ | El Resumen dice si los datos están confirmados por el servidor o vienen de la caché; el Chat guarda como «pendiente» lo que no se pudo enviar; y las **metas** las editan la paciente y su médico con control de versión (409 + diálogo «usar las del otro / sobrescribir»). Falta probar la transacción contra Firestore real
 | Práctica 10 | Autenticación y reglas de seguridad | ✅ | Correo/contraseña, UID en pantalla, dueño por cuenta, reglas de Firestore (17/17) y la app probada en emulador; solo en emuladores, no en la nube real |
 | Actividad 1 | Capturar, enviar y consultar en la nube | ✅ | Pestaña «Contactos» de emergencia: alta, lista y borrado guardados en Firestore (`usuarios/{cuenta}/contactos`), con validación en el servidor, máximo 5, sin teléfonos repetidos, control de dueño y reglas de Firestore |
-| Actividad 2 | Pirámide de pruebas | 🟡 | Diagnóstico en `PIRAMIDE-DE-PRUEBAS.md` (391 pruebas: 99 unitarias, 240 de integración, 52 de punta a punta, de las cuales **solo 1 usa la app real**) y CI escrito en `.github/workflows/pruebas.yml` (**validado como YAML, sin ejecutar todavía en GitHub**) |
+| Actividad 2 | Pirámide de pruebas | 🟡 | Diagnóstico en `PIRAMIDE-DE-PRUEBAS.md` (413 pruebas: 99 unitarias, 262 de integración, 52 de punta a punta, de las cuales **solo 1 usa la app real**) y CI escrito en `.github/workflows/pruebas.yml` (**ejecutado en GitHub: 5 corridas en verde**) |
 | Actividad 3 | Matriz de pruebas de Firestore | 🟡 | Aplicada a VitaSync en `vitasync-backend/MATRIZ-PRUEBAS-FIRESTORE.md` con repositorios en memoria y HTTP; **falta probarla contra Firestore** (eliminación de subcolecciones y persistencia del servidor) |
 
-**Resumen:** ✅ 8 · 🟡 5 · ❌ 0. Las cinco en amarillo (Prácticas 2, 5 y 7 y Actividades 2 y 3) tienen un pendiente concreto que se explica en su fila.
+**Resumen:** ✅ 9 · 🟡 4 · ❌ 0. Las cuatro en amarillo (Prácticas 2 y 5 y Actividades 2 y 3) tienen un pendiente concreto que se explica en su fila.
 
 ---
 
@@ -134,7 +134,7 @@ Tamaño: **S** = unas horas · **M** = una sesión larga · **L** = varias sesio
 
 - [x] **Práctica 9 dentro de VitaSync:** «Metas» (pasos, calorías, sueño) que editan la paciente y su médico, con control de versión: si el segundo guarda con una versión vieja el servidor responde 409 y la app ofrece «usar las del otro» o «sobrescribir con las mías». 16 pruebas del servidor y 16 de la app. **No probado:** la transacción contra Firestore real ni el flujo en el emulador de Android
 - [x] **Actividad 1 dentro de VitaSync:** «Contactos de emergencia» (capturar, guardar en la nube y consultar): 12 pruebas del servidor, 17 de la app, 9 casos de punta a punta, 5 de reglas y la pestaña probada en el emulador de Android
-- [x] **Práctica 7 (en parte):** el administrador asigna roles a varias personas de un solo envío (`PUT /api/admin/roles`: se valida todo el lote antes de cambiar nada; solo «paciente» y «médico»; no se toca a un administrador) y el chat envía archivos (PNG, JPG, PDF o TXT hasta 300 KB, con el contenido verificado en el servidor). 18 pruebas del servidor y 17 de la app. **No hecho:** invitaciones por URL de un solo uso, nombrar administrador desde la app, reparto atómico de roles (Firebase no lo ofrece), abrir PDF dentro de la app, y probar los roles contra Firebase Authentication real
+- [x] **Práctica 7:** el administrador asigna roles a varias personas de un solo envío (`PUT /api/admin/roles`: se valida todo el lote antes de cambiar nada; solo «paciente» y «médico»; no se toca a un administrador) y el chat envía archivos (PNG, JPG, PDF o TXT hasta 300 KB, con el contenido verificado en el servidor). 18 pruebas del servidor y 17 de la app. Más invitaciones de un solo uso (código de 8 caracteres, 7 días, límite de intentos; 13 pruebas) y 4 pruebas contra Firebase Authentication de verdad (emulador oficial: cambiar y leer el rol, y que el token nuevo lo trae). **No hecho:** el enlace que abre la app, nombrar administrador desde la app, reparto atómico de roles (Firebase no lo ofrece), abrir PDF dentro de la app y probar el adjuntar en el emulador
 - [x] **Práctica 2 (justificada):** nota de diseño de por qué el reloj sincroniza por HTTP con el servidor y no por Bluetooth con el teléfono. **No se implementó Bluetooth**; con un reloj físico sería el enlace reloj → teléfono
 
 ### Etapa 4 — Calidad (cubre P8 y Actividad 2) · tamaño M

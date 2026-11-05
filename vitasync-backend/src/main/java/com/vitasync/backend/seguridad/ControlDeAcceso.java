@@ -59,7 +59,8 @@ public class ControlDeAcceso extends OncePerRequestFilter {
         String ruta = req.getRequestURI();
         boolean protegida = ruta.startsWith("/api/usuarios") || ruta.startsWith("/api/smartwatch")
                 || ruta.startsWith("/api/chat") || ruta.startsWith("/api/firmware") || ruta.startsWith("/api/contactos")
-                || ruta.startsWith("/api/metas") || ruta.startsWith("/api/admin");
+                || ruta.startsWith("/api/metas") || ruta.startsWith("/api/admin")
+                || ruta.startsWith("/api/invitaciones");
         boolean publica = "GET".equals(req.getMethod()) && "/api/firmware/ultima".equals(ruta);
         return !protegida || publica || "OPTIONS".equals(req.getMethod());
     }

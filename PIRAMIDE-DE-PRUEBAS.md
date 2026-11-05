@@ -1,6 +1,6 @@
 # Pirámide de pruebas de VitaSync (Actividad 2 aplicada al proyecto)
 
-Revisado el 4 de noviembre de 2026. Los conteos salen de `node scripts/diagnostico-piramide.mjs` y coinciden con las ejecuciones reales (backend 137, app 184, firmware 15).
+Revisado el 4 de noviembre de 2026. Los conteos salen de `node scripts/diagnostico-piramide.mjs` y coinciden con las ejecuciones reales (backend 154, app 189, firmware 15).
 
 ## Fase 1 · Diagnóstico
 
@@ -8,12 +8,12 @@ Revisado el 4 de noviembre de 2026. Los conteos salen de `node scripts/diagnosti
 
 | Nivel | Qué es aquí | Pruebas | % |
 |---|---|---|---|
-| Unitarias | Una clase sola con sus dependencias simuladas o en memoria (servicios del backend, DAO, servicios de la app, firmware) | 99 | 25.3 % |
-| Integración | Varias piezas reales juntas (controlador + filtro de seguridad + servicio; pantalla + repositorio) | 240 | 61.4 % |
-| De punta a punta | El sistema entero: servidor con personas reales del emulador de Authentication, y la app real en un emulador de Android | 52 | 13.3 % |
-| **Total** | | **391** | |
+| Unitarias | Una clase sola con sus dependencias simuladas o en memoria (servicios del backend, DAO, servicios de la app, firmware) | 99 | 24.0 % |
+| Integración | Varias piezas reales juntas (controlador + filtro de seguridad + servicio; pantalla + repositorio) | 262 | 63.4 % |
+| De punta a punta | El sistema entero: servidor con personas reales del emulador de Authentication, y la app real en un emulador de Android | 52 | 12.6 % |
+| **Total** | | **413** | |
 
-Por capa: backend 137 en JUnit + 51 casos de punta a punta · app móvil 184 + 1 de integración en emulador · firmware 15 · web (Angular) 3.
+Por capa: backend 154 en JUnit + 51 casos de punta a punta · app móvil 189 + 1 de integración en emulador · firmware 15 · web (Angular) 3.
 
 **Dos matices que cambian la lectura:**
 1. De los 52 «de punta a punta», **51 son casos por API** (un servidor real, pero sin interfaz). **Con la app real hay 1 sola prueba** (de muchos pasos, en un solo emulador).
@@ -21,7 +21,7 @@ Por capa: backend 137 en JUnit + 51 casos de punta a punta · app móvil 184 + 1
 
 **Cobertura de líneas:** app móvil **90.2 %** (1467 de 1627; lo menos cubierto: `contactos_repository` 62 %, `dispositivo_screen` 69 %, `salud_repository` 70 %). Backend, firmware y web: **no medida** (no está configurada).
 
-**¿Se ejecutan solas?** Hasta hoy no: no había ejecución automática. Se escribió `.github/workflows/pruebas.yml` (4 trabajos: backend, firmware, app y seguridad de punta a punta). **Está validado como YAML pero no se ha ejecutado todavía en GitHub Actions.**
+**¿Se ejecutan solas?** Sí: `.github/workflows/pruebas.yml` (4 trabajos: backend, firmware, app y seguridad de punta a punta) **ya corre en GitHub Actions en cada push; las 5 corridas de la ronda del 4 de noviembre salieron en verde.** Las 3 pruebas de Angular se ejecutaron a mano y pasan, pero el CI todavía no las incluye.
 
 **Lo que no se ejecutó en esta ronda:** las 3 pruebas de Angular (`app.spec.ts`) y la prueba por omisión de la app de Wear OS (una sola, la que trae Flutter).
 
@@ -33,7 +33,7 @@ Por capa: backend 137 en JUnit + 51 casos de punta a punta · app móvil 184 + 1
 
 | # | Mejora | Riesgo que reduce | Esfuerzo |
 |---|---|---|---|
-| 1 | **Ejecutar el CI de verdad** (subir a GitHub, corregir lo que falle) y sumarle las pruebas de Angular | Sin ejecución automática, cualquier regresión llega a la entrega sin que nadie corra las pruebas | Bajo |
+| 1 | ~~Ejecutar el CI de verdad~~ (hecho). Falta sumarle las pruebas de Angular | Sin ejecución automática, cualquier regresión llega a la entrega sin que nadie corra las pruebas | Bajo |
 | 2 | **Ampliar las pruebas con la app real en emulador**: mensajes pendientes con el modo avión real, bloqueo del PIN a los 5 fallos, límite de 5 contactos; y medir la cobertura del backend (JaCoCo) | Errores de la unión pantalla-red-servidor que solo se ven con la app entera | Medio |
 
 ## Qué ejecutar y cuándo
@@ -48,8 +48,8 @@ Por capa: backend 137 en JUnit + 51 casos de punta a punta · app móvil 184 + 1
 
 ```bash
 node scripts/diagnostico-piramide.mjs                         # esta tabla
-cd vitasync-backend && mvn test                               # 137
-cd vitasync-frontend/flutter-mobile-app && flutter test --coverage   # 184 + cobertura
+cd vitasync-backend && mvn test                               # 154
+cd vitasync-frontend/flutter-mobile-app && flutter test --coverage   # 189 + cobertura
 cd vitasync-firmware-sim && dart test                         # 15
 ```
 

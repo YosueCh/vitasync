@@ -88,6 +88,11 @@ public class FirebaseConfig {
     }
 
     @Bean
+    public com.vitasync.backend.admin.InvitacionRepository invitacionRepository(Optional<Firestore> firestore) {
+        return firestore.map(com.vitasync.backend.admin.InvitacionRepository::new).orElse(null);
+    }
+
+    @Bean
     public com.vitasync.backend.metas.MetasRepository metasRepository(Optional<Firestore> firestore) {
         return firestore.map(com.vitasync.backend.metas.MetasRepository::new).orElse(null);
     }

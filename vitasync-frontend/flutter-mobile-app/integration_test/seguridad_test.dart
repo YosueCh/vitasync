@@ -195,6 +195,65 @@ void main() {
     await binding.takeScreenshot('08_contacto_eliminado');
     expect(await ana.get('/contactos', {'usuarioId': idAna}) as List<dynamic>, isEmpty);
 
+    // ---- Práctica 9: metas compartidas con una médica REAL (rol «medico» en el token de Authentication)
+    final servicioDra = HttpCuentaCorreoService();
+    final correoDra = 'dra.$sufijo@uteq.test';
+    await servicioDra.registrarse(correoDra, 'ClaveDra789');
+    final uidDra = servicioDra.sesion!.uid;
+    final asignar = await http.post(
+      Uri.parse('${ApiConfig.authBase}/v1/projects/demo-vitasync/accounts:update'),
+      headers: {'content-type': 'application/json', 'Authorization': 'Bearer owner'},
+      body: jsonEncode({'localId': uidDra, 'customAttributes': jsonEncode({'rol': 'medico'})}),
+    );
+    expect(asignar.statusCode, 200, reason: 'el emulador de Authentication acepta el rol: ${asignar.body}');
+    servicioDra.cerrarSesion();
+    await servicioDra.iniciarSesion(correoDra, 'ClaveDra789'); // token nuevo, ya con el claim
+    final dra = ApiCliente(token: servicioDra.token);
+
+    await tocar(t, find.text('Resumen'));
+    await esperar(t, find.byKey(const Key('abrir-metas')), motivo: 'el botón «Mis metas»');
+    await tocar(t, find.byKey(const Key('abrir-metas')));
+    await esperar(t, find.byKey(const Key('guardar-metas')), motivo: 'la pantalla de metas');
+    expect(find.textContaining('Versión 0'), findsOneWidget);
+    await binding.takeScreenshot('09_metas_version_0');
+
+    // La médica fija 12000 pasos (versión 0 → 1) mientras Ana tiene la pantalla abierta con la versión 0.
+    final medico = await dra.putJson('/metas?usuarioId=$idAna', {'metaPasos': 12000, 'version': 0}) as Map<String, dynamic>;
+    expect(medico['version'], 1);
+    expect(medico['actualizadaPor'], 'Médico', reason: 'el servidor lo deduce del rol del token');
+    await escribir(t, 'meta-pasos', '7000');
+    await tocar(t, find.byKey(const Key('guardar-metas')));
+    await esperar(t, find.byKey(const Key('dialogo-conflicto')), motivo: 'el diálogo de conflicto de versión');
+    expect(find.textContaining('Médico guardó otras metas'), findsOneWidget);
+    await binding.takeScreenshot('10_conflicto_de_metas');
+    expect((await ana.get('/metas', {'usuarioId': idAna}) as Map<String, dynamic>)['metaPasos'], 12000,
+        reason: 'el cambio de Ana NO pisó el de la médica');
+
+    await tocar(t, find.byKey(const Key('conflicto-sobrescribir')));
+    await esperar(t, find.textContaining('Metas guardadas (versión 2)'), motivo: 'el guardado tras decidir');
+    final final2 = await ana.get('/metas', {'usuarioId': idAna}) as Map<String, dynamic>;
+    expect((final2['metaPasos'], final2['version'], final2['actualizadaPor']), (7000, 2, 'Paciente'));
+    await binding.takeScreenshot('11_metas_guardadas_version_2');
+    await expectLater(
+      beto.get('/metas', {'usuarioId': idAna}),
+      throwsA(isA<ApiException>().having((e) => e.mensaje, 'mensaje', contains('No tienes permiso'))),
+      reason: 'otra paciente no ve las metas de Ana',
+    );
+    await tocar(t, find.byType(BackButton));
+    await t.pump(const Duration(seconds: 1));
+
+    // ---- D-06: el selector de rol del chat y el botón «Abrir chat nuevo», vistos en el emulador
+    await tocar(t, find.text('Chat'));
+    await t.pump(const Duration(seconds: 1));
+    await tocar(t, find.byKey(const Key('rol-paciente')));
+    await t.pump(const Duration(seconds: 1));
+    await binding.takeScreenshot('12_chat_selector_de_rol');
+
+    // ---- Práctica 7: pestaña de roles (la ve cualquiera, pero el servidor solo deja pasar al administrador)
+    await tocar(t, find.text('Roles'));
+    await esperar(t, find.byKey(const Key('roles-error')), motivo: 'el aviso de que Ana no es administradora');
+    await binding.takeScreenshot('13_roles_solo_administrador');
+
     // ---- cerrar la sesión de correo regresa al acceso y borra el token
     servicioAna.cerrarSesion();
     expect(await servicioAna.token(), isNull);

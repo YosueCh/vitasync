@@ -57,6 +57,7 @@ import java.util.List;
         com.vitasync.backend.contactos.ContactoController.class, com.vitasync.backend.contactos.ContactoService.class,
         com.vitasync.backend.metas.MetasController.class, com.vitasync.backend.metas.MetasService.class,
         com.vitasync.backend.admin.RolesController.class, com.vitasync.backend.admin.RolesService.class,
+        com.vitasync.backend.admin.InvitacionesController.class, com.vitasync.backend.admin.InvitacionesService.class,
         ControlDeAcceso.class,
         CorsConfig.class
 })
@@ -70,6 +71,11 @@ public class ServidorPruebas {
     @Bean
     DispositivoRepository dispositivoRepository() {
         return new RepositoriosEnMemoria.Dispositivos();
+    }
+
+    @Bean
+    com.vitasync.backend.admin.InvitacionRepository invitacionRepository() {
+        return new RepositoriosEnMemoria.Invitaciones();
     }
 
     @Bean

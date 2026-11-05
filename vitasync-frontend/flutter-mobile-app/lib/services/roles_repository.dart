@@ -19,6 +19,23 @@ class PersonaRol {
       );
 }
 
+/// Invitación de un solo uso con el rol ya asignado.
+class InvitacionRol {
+  const InvitacionRol({required this.codigo, required this.rol, required this.venceEn, this.usada = false});
+
+  final String codigo;
+  final String rol;
+  final DateTime venceEn;
+  final bool usada;
+
+  factory InvitacionRol.fromJson(Map<String, dynamic> json) => InvitacionRol(
+        codigo: json['codigo'] as String,
+        rol: json['rol'] as String,
+        venceEn: DateTime.fromMillisecondsSinceEpoch((json['venceEn'] as num).toInt()),
+        usada: json['usadaPor'] != null,
+      );
+}
+
 /// Roles que el administrador puede repartir.
 const rolesAsignables = {'paciente': 'Paciente', 'medico': 'Médico'};
 
@@ -29,6 +46,14 @@ abstract interface class RolesRepository {
 
   /// Aplica varios cambios de un solo envío (uid → rol). Si uno no cumple las reglas no se aplica ninguno.
   Future<List<PersonaRol>> asignar(Map<String, String> cambios);
+
+  /// El administrador genera un código de un solo uso que concede [rol] (caduca a los 7 días).
+  Future<InvitacionRol> crearInvitacion(String rol);
+
+  Future<List<InvitacionRol>> listarInvitaciones();
+
+  /// Cualquier persona con sesión canjea un código y recibe su rol. Devuelve el rol asignado.
+  Future<String> canjear(String codigo);
 }
 
 /// Implementación real: `GET /api/admin/personas` y `PUT /api/admin/roles`.
@@ -50,6 +75,22 @@ class HttpRolesRepository implements RolesRepository {
     }) as List<dynamic>;
     return lista.cast<Map<String, dynamic>>().map(PersonaRol.fromJson).toList();
   }
+
+  @override
+  Future<InvitacionRol> crearInvitacion(String rol) async =>
+      InvitacionRol.fromJson(await _api.postJson('/admin/invitaciones', {'rol': rol}) as Map<String, dynamic>);
+
+  @override
+  Future<List<InvitacionRol>> listarInvitaciones() async {
+    final lista = await _api.get('/admin/invitaciones') as List<dynamic>;
+    return lista.cast<Map<String, dynamic>>().map(InvitacionRol.fromJson).toList();
+  }
+
+  @override
+  Future<String> canjear(String codigo) async {
+    final json = await _api.postJson('/invitaciones/canjear', {'codigo': codigo}) as Map<String, dynamic>;
+    return json['rol'] as String;
+  }
 }
 
 /// Datos de ejemplo con las mismas reglas del servidor.
@@ -65,6 +106,32 @@ class MuestraRolesRepository implements RolesRepository {
         ];
 
   final List<PersonaRol> _personas;
+  final List<(InvitacionRol, bool)> _invitaciones = [];
+  int _n = 0;
+
+  @override
+  Future<InvitacionRol> crearInvitacion(String rol) async {
+    if (!rolesAsignables.containsKey(rol)) throw const ApiException('Rol no permitido. Solo paciente o medico.');
+    final i = InvitacionRol(
+        codigo: 'MUESTRA${++_n}', rol: rol, venceEn: DateTime.now().add(const Duration(days: 7)));
+    _invitaciones.add((i, false));
+    return i;
+  }
+
+  @override
+  Future<List<InvitacionRol>> listarInvitaciones() async => [
+        for (final (i, usada) in _invitaciones)
+          InvitacionRol(codigo: i.codigo, rol: i.rol, venceEn: i.venceEn, usada: usada),
+      ];
+
+  @override
+  Future<String> canjear(String codigo) async {
+    final k = _invitaciones.indexWhere((e) => e.$1.codigo == codigo.trim().toUpperCase());
+    if (k < 0) throw const ApiException('Ese código no existe.');
+    if (_invitaciones[k].$2) throw const ApiException('Ese código ya se usó.');
+    _invitaciones[k] = (_invitaciones[k].$1, true);
+    return _invitaciones[k].$1.rol;
+  }
 
   @override
   Future<List<PersonaRol>> listar() async => List.of(_personas);
