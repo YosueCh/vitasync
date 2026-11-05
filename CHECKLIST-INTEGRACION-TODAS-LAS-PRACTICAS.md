@@ -37,7 +37,7 @@ Pruebas al cierre, todas verdes: **backend 154 · app 189 (análisis sin avisos)
 **Defectos de la Práctica 8:** corregidos los seis. D-06 (detalles de interfaz) con una salvedad: tres de sus cuatro detalles se corrigieron y se probaron por comportamiento y posición; el cuarto (espera de ~12 s sin servidor) no se pudo reproducir porque el código ya limita la espera a 4 s, y ese límite quedó protegido con una prueba. **El orden de las cuentas y la posición del botón conviene mirarlos a simple vista en un emulador.**
 
 **Lo que queda, en orden de prioridad:**
-1. ~~Probar los repositorios contra Firestore~~ — hecho el 5 de noviembre contra el Firestore real del proyecto (6 pruebas, sin restos). Sigue pendiente la firma real de los tokens de Authentication de la nube (hay que activar «Correo y contraseña» en la consola) y probar las reglas por dueño con una persona real de la nube. Las reglas de `firestore.rules` **ya están publicadas** en el proyecto (5 de noviembre; antes había las de modo de prueba, ya vencidas): se comprobó que sin sesión se niega leer y escribir.
+1. ~~Probar los repositorios contra Firestore~~ — hecho el 5 de noviembre contra el Firestore real del proyecto (6 pruebas, sin restos). También se probó con **personas reales de la nube** (`FirebaseNubeRealTest`, 3 pruebas): la firma real de los tokens (uno alterado o inventado se rechaza), un rol asignado que el token nuevo trae, y las reglas por dueño de Firestore con el SDK de cliente (la dueña lee lo suyo; otra persona y un anónimo reciben 403; nadie escribe). Las reglas de `firestore.rules` **ya están publicadas** en el proyecto (antes había las de modo de prueba, vencidas).
 2. ~~Actividad 2: ejecutar el CI en GitHub y las pruebas de Angular~~ — hecho (5 corridas en verde; Angular 3/3). Sigue pendiente ampliar las pruebas con la app real (hoy es un solo recorrido; ver `PIRAMIDE-DE-PRUEBAS.md`).
 3. ~~Actividad 1 (contactos de emergencia) dentro de VitaSync~~ — hecha el 4 de noviembre.
 4. ~~Práctica 9: conflictos de versión~~ — hecha el 4 de noviembre (metas compartidas entre paciente y médico). La Práctica 7 quedó en parte (ver abajo).
@@ -45,7 +45,7 @@ Pruebas al cierre, todas verdes: **backend 154 · app 189 (análisis sin avisos)
 6. Práctica 7: que el enlace de invitación abra la app directamente (hoy se escribe el código) y probar el adjuntar archivo en el emulador.
 7. Encender la seguridad por omisión cuando se decida (hoy está apagada en el servidor y en la app).
 
-**Límites que conviene tener presentes:** lo de Authentication y las reglas se probó con emuladores; solo los repositorios de Firestore se probaron en la nube real. El servidor de pruebas acepta tokens sin firma del emulador. Todo el trabajo está en el repositorio (rama master) y el CI corre en GitHub.
+**Límites que conviene tener presentes:** Firestore, Authentication y las reglas se probaron en la nube real, pero con pruebas de Java y REST: el recorrido de la app en el emulador de Android sigue siendo contra el servidor de pruebas (tokens del emulador, repositorios en memoria), y el backend completo (`VitasyncBackendApplication`) nunca arrancó contra la nube porque pide Elasticsearch. Todo el trabajo está en el repositorio (rama master) y el CI corre en GitHub.
 
 ---
 

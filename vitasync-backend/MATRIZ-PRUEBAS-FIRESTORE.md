@@ -41,9 +41,25 @@ Con la clave de servicio del proyecto de Firebase se corrió `FirestoreRealTest`
 
 Para repetirlo: `mvn test -Dtest=FirestoreRealTest -Dfirestore.real=true -Dfirebase.auth.emulator.host=` (el último parámetro es importante: si la variable del emulador de Authentication está puesta, el cliente de Java falla con UNAUTHENTICATED contra la nube).
 
+## Personas reales y reglas en la nube (5 de noviembre de 2026)
+
+Con el método «Correo y contraseña» activado y la app web registrada se corrió `FirebaseNubeRealTest` (3 pruebas, todas pasan, 23 s) contra Authentication y Firestore reales. Crea dos personas «zz-prueba-…» y una cuenta VitaSync, y todo se borró al terminar (se comprobó: 0 restos).
+
+| Qué se demostró | Resultado |
+|---|---|
+| Dos personas reales se registran y el servidor verifica su token firmado | Pasa; el rol por omisión es paciente |
+| Un token con la firma alterada, con el contenido cambiado (otro UID) o inventado | Rechazado (esto comprueba la firma real, que el emulador no puede) |
+| Asignar el rol «medico» en la nube | El token nuevo de esa persona lo trae y el servidor lo lee |
+| Reglas, la dueña con su token | Lee su cuenta, su contacto y sus metas (200) |
+| Reglas, otra persona real (aunque sea médica) y un anónimo | 403 en todo |
+| Reglas, escribir desde el cliente | 403 aun siendo la dueña (cuenta, metas y crear cuentas) |
+| Reglas, `tv_sessions`, `invitaciones` y listar todas las cuentas | 403 |
+
+Para repetirlo: `mvn test -Dtest=FirebaseNubeRealTest -Dfirestore.real=true -Dfirebase.auth.emulator.host= -Dfirebase.apikey=<clave de API web>` (la clave de API web no es secreta).
+
 ## Lo que sigue sin verificar
 
 - **Reiniciar el backend completo** y ver los datos: lo que se probó es leer con un cliente nuevo; los datos viven en la nube, así que sobreviven por construcción, pero no se hizo la prueba literal de apagar y volver a encender.
 - **TC07 contra Firestore real**: la pérdida de conexión solo se probó con fallos simulados.
-- **Las reglas por dueño con una persona real de la nube:** las reglas de `firestore.rules` se publicaron en el proyecto el 5 de noviembre de 2026 (las anteriores eran las de modo de prueba, vencidas el 1 de septiembre; respaldo en `firestore.rules.nube-anterior`, reconstruido de la consola). Contra la nube solo se comprobó que SIN sesión se niega leer y escribir (403). Que «cada persona lee lo suyo» sigue probado solo con el emulador, porque en la nube falta activar el método Correo y contraseña de Authentication.
-- **La firma real de los tokens de Authentication** de la nube (el método Correo y contraseña tiene que estar activado en la consola).
+- **Las reglas por dueño de Firestore, con una persona real:** SÍ se probaron en la nube (ver abajo).
+- **El backend completo (`VitasyncBackendApplication`) arrancado contra la nube:** no se hizo, porque pide Elasticsearch; las pruebas de la nube usan los repositorios y el verificador de tokens reales directamente.
