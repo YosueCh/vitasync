@@ -1,0 +1,40 @@
+[00:24:38] Sin teclado interactivo: usa --auto <seg> para sincronizar.
+  LED ⚫ apagado
+[00:24:38] Firmware iniciado v2.3.1
+[00:24:38] Conectado al servidor. Firmware v2.3.1
+  LED 🟢 conectado
+[00:24:39] RELOJ PUESTO
+  LED 🟢 conectado
+  LED 🟡 sincronizando
+[00:24:41] SINCRONIZANDO...
+[00:24:42] SINCRONIZADO (174 pasos)
+  LED 🟢 conectado
+  LED 🟡 sincronizando
+[00:24:45] SINCRONIZANDO...
+[00:24:45] SINCRONIZADO (421 pasos)
+  LED 🟢 conectado
+  LED 🟡 sincronizando
+[00:24:48] SINCRONIZANDO...
+[00:24:48] SINCRONIZADO (510 pasos)
+  LED 🟢 conectado
+  LED 🟡 sincronizando
+[00:24:51] SINCRONIZANDO...
+[00:24:51] SINCRONIZADO (783 pasos)
+  LED 🟢 conectado
+[00:24:52] ACTUALIZACION DISPONIBLE: v2.3.1 -> v2.4.0
+  LED 🟡 sincronizando
+[00:24:52] Instalando firmware v2.4.0... 0%
+[00:24:53] Instalando firmware v2.4.0... 20%
+[00:24:54] Instalando firmware v2.4.0... 40%
+[00:24:54] Instalando firmware v2.4.0... 60%
+[00:24:55] Instalando firmware v2.4.0... 80%
+[00:24:55] Instalando firmware v2.4.0... 100%
+[00:24:56] REINICIANDO...
+  LED ⚫ apagado
+[00:24:56] Firmware iniciado v2.4.0
+[00:24:56] Conectado al servidor. Firmware v2.4.0
+  LED 🟢 conectado
+  LED 🟡 sincronizando
+[00:24:58] SINCRONIZANDO...
+[00:24:59] SINCRONIZADO (892 pasos)
+  LED 🟢 conectado
