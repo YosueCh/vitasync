@@ -75,4 +75,31 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <!-- Práctica 11 (pruebas de caja blanca): cobertura de instrucciones, ramas y complejidad con JaCoCo.
+             Uso: mvn -Pcobertura test   →   target/site/jacoco/index.html y target/site/jacoco/jacoco.xml -->
+        <profile>
+            <id>cobertura</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.jacoco</groupId>
+                        <artifactId>jacoco-maven-plugin</artifactId>
+                        <version>0.8.12</version>
+                        <executions>
+                            <execution>
+                                <goals><goal>prepare-agent</goal></goals>
+                            </execution>
+                            <execution>
+                                <id>informe</id>
+                                <phase>test</phase>
+                                <goals><goal>report</goal></goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>

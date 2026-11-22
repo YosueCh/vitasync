@@ -55,9 +55,9 @@ espera('E2E-02', 'Token inventado', await llamar('GET', '/usuarios', { token: 'n
 
 // ---------------- cada persona crea su cuenta VitaSync
 const cuentaAna = await llamar('POST', '/usuarios', { token: ana.token, cuerpo: { nombreCompleto: 'Ana Pérez', username: `ana${sufijo}`, grupos: [] } });
-espera('E2E-03', 'Ana crea su cuenta VitaSync', cuentaAna, 200, (r) => !!r.json?.id);
+espera('E2E-03', 'Ana crea su cuenta VitaSync', cuentaAna, 201, (r) => !!r.json?.id);
 const cuentaBeto = await llamar('POST', '/usuarios', { token: beto.token, cuerpo: { nombreCompleto: 'Beto Ruiz', username: `beto${sufijo}`, grupos: [] } });
-espera('E2E-04', 'Beto crea su cuenta VitaSync', cuentaBeto, 200, (r) => !!r.json?.id);
+espera('E2E-04', 'Beto crea su cuenta VitaSync', cuentaBeto, 201, (r) => !!r.json?.id);
 const idAna = cuentaAna.json.id;
 const idBeto = cuentaBeto.json.id;
 
@@ -113,7 +113,7 @@ espera('E2E-20', 'Ana lee su chat', await llamar('GET', `/chat/${idAna}/mensajes
 
 // ---------------- contactos de emergencia (Actividad 1 dentro de VitaSync)
 const nuevoContacto = await llamar('POST', `/contactos?usuarioId=${idAna}`, { token: ana.token, cuerpo: { nombre: 'Mamá', telefono: '(442) 123-4567', relacion: 'Familiar' } });
-espera('E2E-21', 'Ana guarda un contacto de emergencia (el teléfono se normaliza)', nuevoContacto, 200, (r) => r.json.telefono === '4421234567' && !!r.json.id);
+espera('E2E-21', 'Ana guarda un contacto de emergencia (el teléfono se normaliza)', nuevoContacto, 201, (r) => r.json.telefono === '4421234567' && !!r.json.id);
 espera('E2E-22', 'Ana consulta sus contactos', await llamar('GET', `/contactos?usuarioId=${idAna}`, { token: ana.token }), 200, (r) => r.json.length === 1 && r.json[0].nombre === 'Mamá');
 espera('E2E-23', 'Mismo teléfono con otro formato: rechazado', await llamar('POST', `/contactos?usuarioId=${idAna}`, { token: ana.token, cuerpo: { nombre: 'Otra', telefono: '442 123 4567', relacion: 'Amigo' } }), 409);
 espera('E2E-24', 'Contacto con datos vacíos: rechazado', await llamar('POST', `/contactos?usuarioId=${idAna}`, { token: ana.token, cuerpo: { nombre: '', telefono: 'abc', relacion: '' } }), 400);
@@ -125,7 +125,7 @@ const intentosContactos = [
 registrar('E2E-25', 'Beto intenta ver, agregar y borrar contactos de Ana', '3 × 403', intentosContactos.map((r) => r.estado).join(','), intentosContactos.every((r) => r.estado === 403));
 espera('E2E-26', 'Beto, con su propia cuenta, ve su lista vacía (no la de Ana)', await llamar('GET', `/contactos?usuarioId=${idBeto}`, { token: beto.token }), 200, (r) => r.json.length === 0);
 espera('E2E-27', 'Sin token no se puede consultar ningún contacto', await llamar('GET', `/contactos?usuarioId=${idAna}`), 401);
-espera('E2E-28', 'Ana elimina su contacto', await llamar('DELETE', `/contactos/${nuevoContacto.json.id}?usuarioId=${idAna}`, { token: ana.token }), 200);
+espera('E2E-28', 'Ana elimina su contacto', await llamar('DELETE', `/contactos/${nuevoContacto.json.id}?usuarioId=${idAna}`, { token: ana.token }), 204);
 espera('E2E-29', 'Eliminar otra vez el mismo contacto: no existe', await llamar('DELETE', `/contactos/${nuevoContacto.json.id}?usuarioId=${idAna}`, { token: ana.token }), 404);
 
 // ---------------- límite conocido de esta prueba (no se cuenta como caso)

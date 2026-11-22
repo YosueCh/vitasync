@@ -1,5 +1,12 @@
 server:
   port: 8081
+  error:
+    # Las respuestas de error NUNCA llevan la pila de Java ni el mensaje interno (WB-HALLAZGO-5, Práctica 11). Con
+    # spring-boot-devtools (modo desarrollo) el valor por omisión era «always»: se fijan aquí para que no dependa del modo.
+    include-stacktrace: never
+    include-message: never
+    include-binding-errors: never
+    include-exception: false
 
 spring:
   application:

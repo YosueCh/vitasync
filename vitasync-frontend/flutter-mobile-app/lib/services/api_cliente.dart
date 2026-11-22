@@ -81,7 +81,13 @@ class ApiCliente {
   Future<dynamic> _enviar(Future<http.Response> Function(Map<String, String> cabeceras) peticion) async {
     final respuesta = await _enviarCrudo(peticion);
     if (respuesta.body.isEmpty) return null;
-    return jsonDecode(utf8.decode(respuesta.bodyBytes));
+    try {
+      return jsonDecode(utf8.decode(respuesta.bodyBytes));
+    } on FormatException {
+      // Un proxy, un portal cautivo o un servidor mal configurado pueden contestar 200 con HTML. Sin esta
+      // traducción la FormatException se escapaba de las pantallas que solo atrapan ApiException (WB-HALLAZGO-1).
+      throw const ApiException('El servidor respondió algo que la aplicación no entiende');
+    }
   }
 
   /// Envía la petición y traduce los fallos a [ApiException]; devuelve la respuesta ya exitosa.
@@ -108,9 +114,12 @@ class ApiCliente {
     // 400 (dato inválido), 409 (conflicto) y 429 (cuenta bloqueada) traen en
     // el cuerpo un mensaje pensado para el usuario: se muestra tal cual.
     if (const {400, 409, 429}.contains(respuesta.statusCode)) {
-      final mensaje = _mensajeDelServidor(respuesta);
-      if (mensaje != null) {
-        throw ApiException(mensaje, codigo: _campo(respuesta, 'codigo'), datos: _cuerpo(respuesta));
+      // Se decodifica UNA sola vez (antes eran tres, y el «catch» de _cuerpo no se podía alcanzar: WB-HALLAZGO-3).
+      final cuerpo = _cuerpo(respuesta);
+      final error = cuerpo?['error'];
+      if (cuerpo != null && error is String && error.isNotEmpty) {
+        final codigo = cuerpo['codigo'];
+        throw ApiException(error, codigo: codigo is String ? codigo : null, datos: cuerpo);
       }
     }
     if (respuesta.statusCode < 200 || respuesta.statusCode >= 300) {
@@ -128,18 +137,4 @@ class ApiCliente {
     }
   }
 
-  static String? _campo(http.Response respuesta, String nombre) {
-    final valor = _cuerpo(respuesta)?[nombre];
-    return valor is String ? valor : null;
-  }
-
-  static String? _mensajeDelServidor(http.Response respuesta) {
-    try {
-      final cuerpo = jsonDecode(utf8.decode(respuesta.bodyBytes));
-      final error = cuerpo is Map<String, dynamic> ? cuerpo['error'] : null;
-      return error is String && error.isNotEmpty ? error : null;
-    } on Object {
-      return null;
-    }
-  }
 }

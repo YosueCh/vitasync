@@ -11,7 +11,9 @@ abstract interface class ChatRepository {
   /// Mensajes con id mayor a [desde] (0 = todos) y si el chat está cerrado.
   Future<ConversacionChat> consultar(String pacienteId, {int desde = 0});
 
-  Future<void> enviar(String pacienteId, RolChat emisor, String texto);
+  /// [idCliente] identifica ESTE mensaje: si la respuesta se pierde y la app lo reenvía con el mismo identificador,
+  /// el servidor no lo guarda dos veces (idempotencia, WB-HALLAZGO-13).
+  Future<void> enviar(String pacienteId, RolChat emisor, String texto, {String? idCliente});
 
   /// Adjunta un archivo (PNG, JPG, PDF o TXT de hasta 300 KB) como un mensaje más.
   Future<void> enviarArchivo(String pacienteId, RolChat emisor,
@@ -44,10 +46,10 @@ class HttpChatRepository implements ChatRepository {
   }
 
   @override
-  Future<void> enviar(String pacienteId, RolChat emisor, String texto) async {
+  Future<void> enviar(String pacienteId, RolChat emisor, String texto, {String? idCliente}) async {
     await _api.postJson(
       _ruta(pacienteId, 'mensajes'),
-      {'emisor': emisor.api, 'texto': texto},
+      {'emisor': emisor.api, 'texto': texto, if (idCliente != null) 'idCliente': idCliente},
     );
   }
 
@@ -82,6 +84,7 @@ class MuestraChatRepository implements ChatRepository {
   final Map<String, List<MensajeChat>> _mensajes = {};
   final Map<String, bool> _cerrado = {};
   final Map<int, Uint8List> _archivos = {};
+  final Set<String> _idsVistos = {};
   int _siguienteId = 1;
 
   @override
@@ -116,10 +119,12 @@ class MuestraChatRepository implements ChatRepository {
   }
 
   @override
-  Future<void> enviar(String pacienteId, RolChat emisor, String texto) async {
+  Future<void> enviar(String pacienteId, RolChat emisor, String texto, {String? idCliente}) async {
     if (_cerrado[pacienteId] ?? false) {
       throw const ApiException('El paciente cerró el chat.');
     }
+    // Igual que el servidor: un reintento con el mismo idCliente no crea otro mensaje.
+    if (idCliente != null && !_idsVistos.add('$pacienteId/$idCliente')) return;
     (_mensajes[pacienteId] ??= []).add(MensajeChat(
       id: _siguienteId++,
       emisor: emisor,

@@ -41,11 +41,11 @@ class _ChatInestable implements ChatRepository {
   }
 
   @override
-  Future<void> enviar(String pacienteId, RolChat emisor, String texto) async {
+  Future<void> enviar(String pacienteId, RolChat emisor, String texto, {String? idCliente}) async {
     intentos++;
     _revisar();
     if (rechazo != null) throw ApiException(rechazo!);
-    return real.enviar(pacienteId, emisor, texto);
+    return real.enviar(pacienteId, emisor, texto, idCliente: idCliente);
   }
 
   @override

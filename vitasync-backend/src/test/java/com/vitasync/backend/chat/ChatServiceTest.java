@@ -116,4 +116,53 @@ class ChatServiceTest {
         assertThatThrownBy(() -> service.enviar("u1", "MEDICO", "uno más"))
                 .isInstanceOf(IllegalStateException.class);
     }
+
+    // ---- WB-HALLAZGO-13: el reintento de un mensaje no lo duplica ----
+
+    @Test
+    void enviarConMismoIdCliente_devuelveElMensajeYaGuardadoSinDuplicar() {
+        MensajeChatDTO primero = service.enviar("u1", "PACIENTE", "hola", "a1b2c3d4e5f60718");
+        MensajeChatDTO reintento = service.enviar("u1", "PACIENTE", "hola", "a1b2c3d4e5f60718");
+
+        assertThat(reintento).isEqualTo(primero);
+        assertThat(service.consultar("u1", 0).mensajes()).hasSize(1);
+    }
+
+    @Test
+    void enviarConIdClienteDistinto_guardaLosDos() {
+        service.enviar("u1", "PACIENTE", "uno", "id-uno");
+        service.enviar("u1", "PACIENTE", "dos", "id-dos");
+
+        assertThat(service.consultar("u1", 0).mensajes()).hasSize(2);
+    }
+
+    @Test
+    void enviarSinIdCliente_nuncaDeduplica() {
+        service.enviar("u1", "PACIENTE", "igual");
+        service.enviar("u1", "PACIENTE", "igual");
+
+        assertThat(service.consultar("u1", 0).mensajes()).hasSize(2);
+    }
+
+    @Test
+    void idClienteConCaracteresInvalidos_seRechaza() {
+        assertThatThrownBy(() -> service.enviar("u1", "PACIENTE", "hola", "../../x"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Identificador");
+        assertThatThrownBy(() -> service.enviar("u1", "PACIENTE", "hola", ""))
+                .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void alCerrarElChat_seOlvidanLosIdsYUnReintentoYaNoSePuedeEnviar() {
+        service.enviar("u1", "PACIENTE", "hola", "id-cierre");
+        service.cerrar("u1");
+
+        assertThatThrownBy(() -> service.enviar("u1", "PACIENTE", "hola", "id-cierre"))
+                .isInstanceOf(IllegalStateException.class);
+
+        service.abrir("u1");
+        service.enviar("u1", "PACIENTE", "hola", "id-cierre");
+        assertThat(service.consultar("u1", 0).mensajes()).hasSize(1);
+    }
 }

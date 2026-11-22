@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:math' show Random;
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
@@ -190,7 +191,8 @@ class _ChatScreenState extends State<ChatScreen> {
     while (_pendientes.isNotEmpty) {
       final p = _pendientes.first;
       try {
-        await widget.chat.enviar(p.pacienteId, p.rol, p.texto);
+        // Mismo idCliente que en el primer intento: si el servidor ya lo había guardado, no se duplica (WB-HALLAZGO-13).
+        await widget.chat.enviar(p.pacienteId, p.rol, p.texto, idCliente: p.idCliente);
         if (mounted) setState(() => _pendientes.removeAt(0));
         _avisar('Mensaje pendiente enviado: ya lo confirmó el servidor');
       } on ApiException catch (e) {
@@ -219,6 +221,12 @@ class _ChatScreenState extends State<ChatScreen> {
       ..showSnackBar(SnackBar(content: Text(texto)));
   }
 
+  /// 128 bits aleatorios en hexadecimal: no se repite entre mensajes ni entre dispositivos.
+  static String _nuevoIdDeMensaje() {
+    final azar = Random.secure();
+    return List.generate(16, (_) => azar.nextInt(256).toRadixString(16).padLeft(2, '0')).join();
+  }
+
   Future<void> _enviar() async {
     final rol = _rol;
     final pacienteId = _pacienteId;
@@ -239,8 +247,10 @@ class _ChatScreenState extends State<ChatScreen> {
       _errorTexto = null;
       _enviando = true;
     });
+    // Un identificador por mensaje, creado UNA vez: si la respuesta se pierde, el reintento lo reutiliza.
+    final idCliente = _nuevoIdDeMensaje();
     try {
-      await widget.chat.enviar(pacienteId, rol, texto);
+      await widget.chat.enviar(pacienteId, rol, texto, idCliente: idCliente);
       if (!mounted) return;
       _controlador.clear();
       _avisar('Mensaje enviado: ${rol.dispositivo} → ${rol.otro.dispositivo}');
@@ -250,7 +260,7 @@ class _ChatScreenState extends State<ChatScreen> {
         // Sin conexión: el mensaje NO se pierde ni se da por enviado; queda pendiente.
         if (mounted) {
           _controlador.clear();
-          setState(() => _pendientes.add(_Pendiente(rol, pacienteId, texto, DateTime.now())));
+          setState(() => _pendientes.add(_Pendiente(rol, pacienteId, texto, DateTime.now(), idCliente)));
           _avisar('Sin conexión: el mensaje quedó PENDIENTE y se enviará al reconectar');
           _bajarAlFinal();
         }
@@ -717,8 +727,10 @@ class _Banner extends StatelessWidget {
 /// con el emisor y la hora de envío.
 /// Mensaje escrito sin conexión, todavía sin confirmar por el servidor.
 class _Pendiente {
-  const _Pendiente(this.rol, this.pacienteId, this.texto, this.hora);
+  const _Pendiente(this.rol, this.pacienteId, this.texto, this.hora, this.idCliente);
 
+  /// Identificador del mensaje, generado una sola vez y reutilizado en cada reintento.
+  final String idCliente;
   final RolChat rol;
   final String pacienteId;
   final String texto;

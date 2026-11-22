@@ -31,12 +31,16 @@ public class ChatController {
     }
 
     /** Cuerpo de POST /mensajes. */
-    public record EnviarMensajeDTO(String emisor, String texto) {
+    public record EnviarMensajeDTO(String emisor, String texto, String idCliente) {
+        /** Sin identificador de cliente (versiones anteriores de la app): no hay deduplicación. */
+        public EnviarMensajeDTO(String emisor, String texto) {
+            this(emisor, texto, null);
+        }
     }
 
     @PostMapping("/mensajes")
     public MensajeChatDTO enviar(@PathVariable String pacienteId, @RequestBody EnviarMensajeDTO cuerpo) {
-        return service.enviar(pacienteId, cuerpo.emisor(), cuerpo.texto());
+        return service.enviar(pacienteId, cuerpo.emisor(), cuerpo.texto(), cuerpo.idCliente());
     }
 
     /** Cuerpo de POST /archivos: el contenido va en Base64. */

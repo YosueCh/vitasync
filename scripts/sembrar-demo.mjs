@@ -51,7 +51,7 @@ if (cuentas.estado !== 200) { console.error('El backend respondió', cuentas.est
 let cuenta = cuentas.json[0];
 if (!cuenta) {
   const c = await llamar('POST', '/usuarios', token, { nombreCompleto: 'Cuenta Demo', username: 'demo' + Date.now().toString(36), grupos: [] });
-  if (c.estado !== 200) { console.error('No se pudo crear la cuenta VitaSync:', c.estado, JSON.stringify(c.json)); process.exit(1); }
+  if (c.estado !== 200 && c.estado !== 201) { console.error('No se pudo crear la cuenta VitaSync:', c.estado, JSON.stringify(c.json)); process.exit(1); }
   cuenta = c.json;
   paso(`cuenta VitaSync creada: ${cuenta.nombreCompleto}`);
 } else {

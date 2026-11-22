@@ -59,6 +59,10 @@ class _LoginCorreoScreenState extends State<LoginCorreoScreen> {
       if (mounted) widget.onAutenticado();
     } on ApiException catch (e) {
       if (mounted) setState(() => _error = e.mensaje);
+    } catch (_) {
+      // Cualquier otro fallo inesperado (respuesta con campos que faltan, cast inválido…) también se le dice a la
+      // persona: antes el botón volvía a activarse sin ningún mensaje y parecía que «no hacía nada» (WB-HALLAZGO-2).
+      if (mounted) setState(() => _error = 'No se pudo completar. Inténtalo de nuevo.');
     } finally {
       if (mounted) setState(() => _ocupado = false);
     }

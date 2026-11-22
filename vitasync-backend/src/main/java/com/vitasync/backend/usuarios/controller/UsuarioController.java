@@ -43,7 +43,7 @@ public class UsuarioController {
     @PostMapping
     public ResponseEntity<?> crear(@RequestBody CrearUsuarioDTO datos, HttpServletRequest peticion) {
         Identidad quien = (Identidad) peticion.getAttribute(ControlDeAcceso.ATRIBUTO);
-        return conFirebase(() -> service.crear(datos, quien == null ? null : quien.uid()));
+        return conFirebase(HttpStatus.CREATED, () -> service.crear(datos, quien == null ? null : quien.uid()));
     }
 
     @GetMapping("/{id}")
@@ -63,9 +63,9 @@ public class UsuarioController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> eliminar(@PathVariable String id) {
-        return conFirebase(() -> {
+        return conFirebase(HttpStatus.NO_CONTENT, () -> {
             service.eliminar(id);
-            return new MensajeDTO("Usuario eliminado permanentemente.");
+            return null;
         });
     }
 
@@ -87,13 +87,19 @@ public class UsuarioController {
     }
 
     private ResponseEntity<?> conFirebase(Supplier<?> accion) {
+        return conFirebase(HttpStatus.OK, accion);
+    }
+
+    /** {@code exito}: 200 para consultas y cambios, 201 al crear, 204 al eliminar (sin cuerpo). */
+    private ResponseEntity<?> conFirebase(HttpStatus exito, Supplier<?> accion) {
         if (!service.isDisponible()) {
             return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
                     .body(new ErrorDTO("Firebase no está configurado. Agrega serviceAccountKey.json en "
                             + "src/main/resources/ (ver README del backend)."));
         }
         try {
-            return ResponseEntity.ok(accion.get());
+            Object cuerpo = accion.get();
+            return exito == HttpStatus.NO_CONTENT ? ResponseEntity.noContent().build() : ResponseEntity.status(exito).body(cuerpo);
         } catch (UsuarioService.UsuarioNoEncontradoException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorDTO(e.getMessage()));
         } catch (UsuarioService.DatoInvalidoException e) {
@@ -114,6 +120,4 @@ public class UsuarioController {
     private record ErrorDTO(String error) {
     }
 
-    private record MensajeDTO(String mensaje) {
-    }
 }

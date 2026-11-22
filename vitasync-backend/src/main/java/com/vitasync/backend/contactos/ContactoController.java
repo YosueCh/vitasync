@@ -32,23 +32,29 @@ public class ContactoController {
 
     @PostMapping
     public ResponseEntity<?> crear(@RequestParam String usuarioId, @RequestBody CrearContactoDTO cuerpo) {
-        return conFirebase(() -> service.crear(usuarioId, cuerpo));
+        return conFirebase(HttpStatus.CREATED, () -> service.crear(usuarioId, cuerpo));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> eliminar(@PathVariable String id, @RequestParam String usuarioId) {
-        return conFirebase(() -> {
+        return conFirebase(HttpStatus.NO_CONTENT, () -> {
             service.eliminar(usuarioId, id);
-            return Map.of("mensaje", "Contacto eliminado.");
+            return null;
         });
     }
 
     private ResponseEntity<?> conFirebase(java.util.function.Supplier<?> accion) {
+        return conFirebase(HttpStatus.OK, accion);
+    }
+
+    /** {@code exito}: 200 para consultas, 201 al crear, 204 al eliminar (sin cuerpo). */
+    private ResponseEntity<?> conFirebase(HttpStatus exito, java.util.function.Supplier<?> accion) {
         if (!service.isDisponible()) {
             return error(HttpStatus.SERVICE_UNAVAILABLE, "Firebase no está configurado.");
         }
         try {
-            return ResponseEntity.ok(accion.get());
+            Object cuerpo = accion.get();
+            return exito == HttpStatus.NO_CONTENT ? ResponseEntity.noContent().build() : ResponseEntity.status(exito).body(cuerpo);
         } catch (ContactoService.DatoInvalidoException e) {
             return error(HttpStatus.BAD_REQUEST, e.getMessage());
         } catch (ContactoService.ConflictoException e) {

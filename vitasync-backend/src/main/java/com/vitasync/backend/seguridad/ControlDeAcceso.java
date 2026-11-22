@@ -94,6 +94,11 @@ public class ControlDeAcceso extends OncePerRequestFilter {
         }
 
         String objetivo = cuentaObjetivo(req);
+        if (objetivo != null && !IdentificadorValido.esValido(objetivo)) {
+            // Antes llegaba tal cual a Firestore y provocaba un 500 (WB-HALLAZGO-4).
+            error(res, HttpServletResponse.SC_BAD_REQUEST, "Identificador de cuenta inválido.");
+            return;
+        }
         if (objetivo != null && !id.esAdmin() && usuarios.isDisponible()) {
             boolean esDueno = usuarios.propietarioDe(objetivo).map(id.uid()::equals).orElse(false);
             // Un médico puede atender el chat de un paciente y fijarle metas; nada más (no administra cuentas).

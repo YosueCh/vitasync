@@ -38,7 +38,9 @@ public class FirmwareController {
     /** GET /api/firmware/orden?usuarioId=: lo consulta el firmware del dispositivo. */
     @GetMapping("/orden")
     public ResponseEntity<?> orden(@RequestParam String usuarioId) {
-        return ResponseEntity.ok(service.ordenPendiente(usuarioId)
+        // Sin la comprobación de disponibilidad, un servidor sin Firebase contestaba 200 «no hay orden pendiente»: el
+        // reloj creía que no había actualización cuando en realidad el sistema no podía saberlo (WB-HALLAZGO-7).
+        return conFirebase(() -> service.ordenPendiente(usuarioId)
                 .map(v -> Map.<String, Object>of("pendiente", true, "version", v))
                 .orElse(Map.<String, Object>of("pendiente", false)));
     }

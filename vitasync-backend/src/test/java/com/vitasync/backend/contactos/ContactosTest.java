@@ -66,7 +66,7 @@ class ContactosTest {
     @Test
     void crearYConsultar_seGuardaConTelefonoNormalizado() throws Exception {
         crear(cuentaAna, "token-ana", cuerpo("Mamá", "(442) 123-4567", "Familiar"))
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").isNotEmpty())
                 .andExpect(jsonPath("$.telefono").value("4421234567"))
                 .andExpect(jsonPath("$.relacion").value("Familiar"));
@@ -80,14 +80,14 @@ class ContactosTest {
     @Test
     void telefonoConMasYLadaInternacional_esValido() throws Exception {
         crear(cuentaAna, "token-ana", cuerpo("Dra. López", "+52 442 765 4321", "Médico"))
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.telefono").value("+524427654321"));
     }
 
     @Test
     void sinRelacion_quedaComoOtro() throws Exception {
         crear(cuentaAna, "token-ana", "{\"nombre\":\"Vecino\",\"telefono\":\"4421112233\"}")
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.relacion").value("Otro"));
     }
 
@@ -119,7 +119,7 @@ class ContactosTest {
 
     @Test
     void telefonoRepetido_409_aunqueCambieElFormato() throws Exception {
-        crear(cuentaAna, "token-ana", cuerpo("Mamá", "442 123 4567", "Familiar")).andExpect(status().isOk());
+        crear(cuentaAna, "token-ana", cuerpo("Mamá", "442 123 4567", "Familiar")).andExpect(status().isCreated());
 
         crear(cuentaAna, "token-ana", cuerpo("Otra mamá", "(442)123-4567", "Familiar"))
                 .andExpect(status().isConflict()).andExpect(jsonPath("$.error").isNotEmpty());
@@ -129,14 +129,14 @@ class ContactosTest {
 
     @Test
     void mismoTelefonoEnOtraCuenta_noEsRepetido() throws Exception {
-        crear(cuentaAna, "token-ana", cuerpo("Mamá", "4421234567", "Familiar")).andExpect(status().isOk());
-        crear(cuentaBeto, "token-beto", cuerpo("Mamá", "4421234567", "Familiar")).andExpect(status().isOk());
+        crear(cuentaAna, "token-ana", cuerpo("Mamá", "4421234567", "Familiar")).andExpect(status().isCreated());
+        crear(cuentaBeto, "token-beto", cuerpo("Mamá", "4421234567", "Familiar")).andExpect(status().isCreated());
     }
 
     @Test
     void maximoDeCincoContactos_elSextoSeRechaza() throws Exception {
         for (int i = 0; i < ContactoService.MAX_POR_CUENTA; i++) {
-            crear(cuentaAna, "token-ana", cuerpo("Contacto " + i, "44211122" + (10 + i), "Otro")).andExpect(status().isOk());
+            crear(cuentaAna, "token-ana", cuerpo("Contacto " + i, "44211122" + (10 + i), "Otro")).andExpect(status().isCreated());
         }
 
         crear(cuentaAna, "token-ana", cuerpo("De más", "4429998877", "Otro"))
@@ -152,7 +152,7 @@ class ContactosTest {
         String id = contactos.crear(cuentaAna, new CrearContactoDTO("Mamá", "4421234567", "Familiar")).id();
 
         mvc.perform(delete("/api/contactos/" + id + "?usuarioId=" + cuentaAna).header("Authorization", "Bearer token-ana"))
-                .andExpect(status().isOk());
+                .andExpect(status().isNoContent());
         assertThat(contactos.listar(cuentaAna)).isEmpty();
 
         mvc.perform(delete("/api/contactos/" + id + "?usuarioId=" + cuentaAna).header("Authorization", "Bearer token-ana"))

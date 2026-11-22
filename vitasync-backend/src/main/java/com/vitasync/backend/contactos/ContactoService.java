@@ -50,17 +50,15 @@ public class ContactoService implements LimpiezaDeCuenta {
         if (relacion.length() > 30) {
             throw new DatoInvalidoException("La relación no puede pasar de 30 caracteres.");
         }
-        List<ContactoDTO> actuales = repo.orElseThrow().listar(cuentaId);
-        if (actuales.size() >= MAX_POR_CUENTA) {
-            throw new ConflictoException("Solo se pueden guardar " + MAX_POR_CUENTA
-                    + " contactos de emergencia. Elimina uno para agregar otro.");
-        }
-        final String telefonoFinal = telefono;
-        if (actuales.stream().anyMatch(c -> telefonoFinal.equals(c.telefono()))) {
-            throw new ConflictoException("Ya hay un contacto con ese teléfono.");
-        }
         ContactoDTO nuevo = new ContactoDTO(UUID.randomUUID().toString(), nombre, telefono, relacion);
-        repo.orElseThrow().guardar(cuentaId, nuevo);
+        // El máximo y el teléfono repetido se comprueban DENTRO de la misma operación atómica que guarda (WB-HALLAZGO-8).
+        switch (repo.orElseThrow().guardarSiCabe(cuentaId, nuevo, MAX_POR_CUENTA)) {
+            case LIMITE_ALCANZADO -> throw new ConflictoException("Solo se pueden guardar " + MAX_POR_CUENTA
+                    + " contactos de emergencia. Elimina uno para agregar otro.");
+            case TELEFONO_REPETIDO -> throw new ConflictoException("Ya hay un contacto con ese teléfono.");
+            case OCUPADO -> throw new ConflictoException("Hay otra operación en curso con tus contactos. Inténtalo de nuevo.");
+            case CREADO -> { }
+        }
         return nuevo;
     }
 

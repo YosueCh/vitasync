@@ -54,6 +54,24 @@ public final class RepositoriosEnMemoria {
         }
 
         @Override
+        public List<Usuario> listarPorPropietario(String propietarioUid) {
+            return listarTodos().stream().filter(u -> propietarioUid != null && propietarioUid.equals(u.getPropietarioUid())).toList();
+        }
+
+        @Override
+        public boolean existeUsername(String username) {
+            return datos.values().stream().anyMatch(u -> username.equalsIgnoreCase(u.getUsername()));
+        }
+
+        /** Alta atómica con usuario único (equivale a la transacción con el documento de reserva de Firestore). */
+        @Override
+        public synchronized boolean guardarSiUsernameLibre(Usuario u) {
+            if (existeUsername(u.getUsername())) return false;
+            datos.put(u.getId(), copiar(u));
+            return true;
+        }
+
+        @Override
         public void eliminar(String id) {
             datos.remove(id);
         }
@@ -230,6 +248,16 @@ public final class RepositoriosEnMemoria {
         @Override
         public void guardar(String cuentaId, com.vitasync.backend.contactos.ContactoDTO c) {
             datos.computeIfAbsent(cuentaId, k -> new CopyOnWriteArrayList<>()).add(c);
+        }
+
+        /** Alta atómica (equivale a la transacción de Firestore): comprobar y guardar sin que nadie se cuele en medio. */
+        @Override
+        public synchronized ResultadoAlta guardarSiCabe(String cuentaId, com.vitasync.backend.contactos.ContactoDTO c, int maximo) {
+            List<com.vitasync.backend.contactos.ContactoDTO> actuales = datos.computeIfAbsent(cuentaId, k -> new CopyOnWriteArrayList<>());
+            if (actuales.size() >= maximo) return ResultadoAlta.LIMITE_ALCANZADO;
+            if (actuales.stream().anyMatch(x -> x.telefono().equals(c.telefono()))) return ResultadoAlta.TELEFONO_REPETIDO;
+            actuales.add(c);
+            return ResultadoAlta.CREADO;
         }
 
         @Override

@@ -22,13 +22,47 @@ import java.util.UUID;
 @Service
 public class UsuarioService {
 
+    /**
+     * Cuánto se recuerda el dueño de una cuenta (WB-HALLAZGO-12). El dueño NUNCA cambia después de crear la cuenta; lo
+     * único que puede pasar es que la cuenta se elimine, y eso invalida la entrada en {@link #eliminar}.
+     */
+    static final long VIGENCIA_DUENOS_MS = 60_000;
+    private static final int MAX_DUENOS_EN_CACHE = 10_000;
+
+    private record DuenoEnCache(String uid, long venceEn) {
+    }
+
     private final Optional<UsuarioRepository> repo;
     private final List<LimpiezaDeCuenta> limpiezas;
+    private final java.time.Clock reloj;
+    private final long vigenciaMs;
+    private final java.util.Map<String, DuenoEnCache> duenos = new java.util.concurrent.ConcurrentHashMap<>();
 
+    /**
+     * @param vigenciaMs cuánto se recuerda el dueño de una cuenta; 0 (o menos) apaga el caché. Se configura con
+     *                   {@code vitasync.cache-duenos.vigencia-ms} (por omisión 60000); apagarlo sirve para comparar
+     *                   el rendimiento con y sin caché (Práctica 11, fase 5).
+     */
     @org.springframework.beans.factory.annotation.Autowired
+    public UsuarioService(Optional<UsuarioRepository> repo, List<LimpiezaDeCuenta> limpiezas,
+                          @org.springframework.beans.factory.annotation.Value("${vitasync.cache-duenos.vigencia-ms:60000}") long vigenciaMs) {
+        this(repo, limpiezas, vigenciaMs, java.time.Clock.systemUTC());
+    }
+
     public UsuarioService(Optional<UsuarioRepository> repo, List<LimpiezaDeCuenta> limpiezas) {
+        this(repo, limpiezas, VIGENCIA_DUENOS_MS, java.time.Clock.systemUTC());
+    }
+
+    /** Con reloj propio, para probar la caducidad del caché. */
+    UsuarioService(Optional<UsuarioRepository> repo, List<LimpiezaDeCuenta> limpiezas, java.time.Clock reloj) {
+        this(repo, limpiezas, VIGENCIA_DUENOS_MS, reloj);
+    }
+
+    private UsuarioService(Optional<UsuarioRepository> repo, List<LimpiezaDeCuenta> limpiezas, long vigenciaMs, java.time.Clock reloj) {
         this.repo = repo;
         this.limpiezas = limpiezas;
+        this.vigenciaMs = vigenciaMs;
+        this.reloj = reloj;
     }
 
     /** Sin limpiezas de datos asociados (pruebas de la propia cuenta). */
@@ -60,9 +94,9 @@ public class UsuarioService {
         if (!USERNAME_VALIDO.matcher(username).matches()) {
             throw new DatoInvalidoException("El usuario es obligatorio: 3 a 30 caracteres entre letras, números, punto, guion y guion bajo.");
         }
-        boolean repetido = repo.orElseThrow().listarTodos().stream()
-                .anyMatch(x -> username.equalsIgnoreCase(x.getUsername()));
-        if (repetido) {
+        // Comprobación rápida con una consulta indexada (antes se leía TODA la colección: WB-HALLAZGO-10). La garantía
+        // real contra altas simultáneas es guardarSiUsernameLibre, más abajo (WB-HALLAZGO-9).
+        if (repo.orElseThrow().existeUsername(username)) {
             throw new UsernameDuplicadoException(username);
         }
         Usuario u = new Usuario();
@@ -79,7 +113,9 @@ public class UsuarioService {
         u.setRequiereCambioPassword(true);
         u.setFechaCreacion(Instant.now().toString());
         u.setUltimoInicioSesion(null);
-        repo.orElseThrow().guardar(u);
+        if (!repo.orElseThrow().guardarSiUsernameLibre(u)) {
+            throw new UsernameDuplicadoException(username);
+        }
         return toDTO(u);
     }
 
@@ -89,15 +125,28 @@ public class UsuarioService {
 
     /** Solo las cuentas de una persona (Práctica 10): nadie ve las cuentas de otra. */
     public List<UsuarioDTO> listarDe(String propietarioUid) {
-        return repo.orElseThrow().listarTodos().stream()
-                .filter(u -> propietarioUid != null && propietarioUid.equals(u.getPropietarioUid()))
-                .map(this::toDTO).toList();
+        if (propietarioUid == null) return List.of();
+        return repo.orElseThrow().listarPorPropietario(propietarioUid).stream().map(this::toDTO).toList();
     }
 
     /** UID del dueño de la cuenta; vacío si la cuenta no existe o no tiene dueño. */
     public Optional<String> propietarioDe(String id) {
+        // Cada petición autenticada pasa por aquí (ControlDeAcceso). Sin caché era UNA lectura de Firestore (~90 ms) por
+        // petición, antes de hacer el trabajo real. Solo se recuerdan los dueños ENCONTRADOS; «no existe» se vuelve a
+        // consultar siempre, para que una cuenta recién creada se vea de inmediato.
+        long ahora = reloj.millis();
+        DuenoEnCache guardado = vigenciaMs > 0 ? duenos.get(id) : null;
+        if (guardado != null && guardado.venceEn() > ahora) return Optional.of(guardado.uid());
         Usuario u = repo.orElseThrow().buscarPorId(id);
-        return u == null ? Optional.empty() : Optional.ofNullable(u.getPropietarioUid());
+        if (u == null || u.getPropietarioUid() == null) {
+            duenos.remove(id);
+            return Optional.empty();
+        }
+        if (vigenciaMs > 0) {
+            if (duenos.size() >= MAX_DUENOS_EN_CACHE) duenos.clear(); // tope de memoria
+            duenos.put(id, new DuenoEnCache(u.getPropietarioUid(), ahora + vigenciaMs));
+        }
+        return Optional.of(u.getPropietarioUid());
     }
 
     public UsuarioDTO obtener(String id) {
@@ -129,8 +178,10 @@ public class UsuarioService {
      */
     public void eliminar(String id) {
         requerir(id); // valida que exista antes de intentar borrar
+        duenos.remove(id); // desde este momento nadie debe seguir pasando por el caché
         limpiezas.forEach(l -> l.borrarDatosDe(id));
         repo.orElseThrow().eliminar(id);
+        duenos.remove(id);
     }
 
     /**

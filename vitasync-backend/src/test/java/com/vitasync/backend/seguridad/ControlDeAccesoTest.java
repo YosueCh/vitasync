@@ -161,7 +161,7 @@ class ControlDeAccesoTest {
         mvc.perform(post("/api/usuarios").header("Authorization", bearer("token-ana"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"nombreCompleto\":\"Ana Dos\",\"username\":\"ana2\",\"grupos\":[],\"propietarioUid\":\"uid-beto\"}"))
-                .andExpect(status().isOk());
+                .andExpect(status().isCreated());
         assertEquals(List.of("ana", "ana2"), usuarios.listarDe("uid-ana").stream().map(UsuarioDTO::username).sorted().toList());
         assertEquals(1, usuarios.listarDe("uid-beto").size(), "Beto no recibió la cuenta");
     }

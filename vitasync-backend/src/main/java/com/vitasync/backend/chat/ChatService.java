@@ -40,6 +40,8 @@ public class ChatService implements com.vitasync.backend.usuarios.service.Limpie
     private static class Conversacion {
         final List<MensajeChatDTO> mensajes = new ArrayList<>();
         final Map<Integer, byte[]> archivos = new java.util.HashMap<>();
+        /** Mensajes ya guardados por su identificador de cliente: un reintento devuelve el mismo, no crea otro. */
+        final Map<String, MensajeChatDTO> porIdCliente = new java.util.HashMap<>();
         int bytesArchivos;
         int siguienteId = 1;
         boolean cerrada;
@@ -55,7 +57,21 @@ public class ChatService implements com.vitasync.backend.usuarios.service.Limpie
      * @throws IllegalStateException    el paciente cerró el chat o se llenó el historial
      */
     public MensajeChatDTO enviar(String pacienteId, String emisor, String texto) {
+        return enviar(pacienteId, emisor, texto, null);
+    }
+
+    /**
+     * Igual que {@link #enviar(String, String, String)} pero IDEMPOTENTE (WB-HALLAZGO-13): si el cliente manda un
+     * {@code idCliente}, un reintento con el mismo identificador devuelve el mensaje ya guardado en vez de crear otro.
+     * Así, si la respuesta se pierde después de que el servidor guardó el mensaje, la app puede reenviarlo sin duplicarlo.
+     *
+     * @param idCliente identificador que genera la app para cada mensaje (opcional; si es null no hay deduplicación)
+     */
+    public MensajeChatDTO enviar(String pacienteId, String emisor, String texto, String idCliente) {
         validarId(pacienteId);
+        if (idCliente != null && !ID_VALIDO.matcher(idCliente).matches()) {
+            throw new IllegalArgumentException("Identificador de mensaje inválido.");
+        }
         String quien = emisor == null ? "" : emisor.trim().toUpperCase();
         if (!quien.equals("MEDICO") && !quien.equals("PACIENTE")) {
             throw new IllegalArgumentException("El emisor debe ser MEDICO o PACIENTE.");
@@ -70,6 +86,10 @@ public class ChatService implements com.vitasync.backend.usuarios.service.Limpie
 
         Conversacion c = conversacion(pacienteId);
         synchronized (c) {
+            if (idCliente != null) {
+                MensajeChatDTO previo = c.porIdCliente.get(idCliente);
+                if (previo != null) return previo; // reintento de algo que ya se guardó
+            }
             if (c.cerrada) {
                 throw new IllegalStateException("El paciente cerró el chat.");
             }
@@ -78,6 +98,7 @@ public class ChatService implements com.vitasync.backend.usuarios.service.Limpie
             }
             MensajeChatDTO m = new MensajeChatDTO(c.siguienteId++, quien, limpio, Instant.now().toString());
             c.mensajes.add(m);
+            if (idCliente != null) c.porIdCliente.put(idCliente, m);
             return m;
         }
     }
@@ -197,6 +218,7 @@ public class ChatService implements com.vitasync.backend.usuarios.service.Limpie
         synchronized (c) {
             c.mensajes.clear();
             c.archivos.clear();
+            c.porIdCliente.clear();
             c.bytesArchivos = 0;
             c.cerrada = true;
         }
@@ -213,6 +235,7 @@ public class ChatService implements com.vitasync.backend.usuarios.service.Limpie
         synchronized (c) {
             c.mensajes.clear();
             c.archivos.clear();
+            c.porIdCliente.clear();
             c.bytesArchivos = 0;
             c.cerrada = false;
         }
