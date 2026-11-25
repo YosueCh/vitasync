@@ -12,6 +12,9 @@ y versionado con [SemVer](https://semver.org/lang/es/) (`MAYOR.MENOR.PARCHE`):
 - Matriz de automatización AUT-01…06 (83 pruebas: login, reglas, MetasService, integración app-servidor y API, SQLite real).
 - Flujo de GitHub Actions ampliado (trabajo «automatizacion», resúmenes por trabajo, artefactos) y scripts/ci (resúmenes y ejecutor local).
 
+### CI
+- Primera ejecución en GitHub Actions con la matriz AUT: los 6 trabajos en verde (run 45544917168, commit 78d5abf).
+
 ### Corregido
 - HttpCuentaCorreoService: una respuesta no JSON ya no lanza FormatException (ApiException con mensaje claro).
 - ReglasMetas.validarSueno rechaza NaN, igual que el servidor.
