@@ -6,6 +6,16 @@ y versionado con [SemVer](https://semver.org/lang/es/) (`MAYOR.MENOR.PARCHE`):
 - **MENOR**: funciones nuevas que no rompen lo existente.
 - **PARCHE**: correcciones de bugs.
 
+## [Prácticas 13 y 14] — 2026-11-24
+
+### Añadido
+- Matriz de automatización AUT-01…06 (83 pruebas: login, reglas, MetasService, integración app-servidor y API, SQLite real).
+- Flujo de GitHub Actions ampliado (trabajo «automatizacion», resúmenes por trabajo, artefactos) y scripts/ci (resúmenes y ejecutor local).
+
+### Corregido
+- HttpCuentaCorreoService: una respuesta no JSON ya no lanza FormatException (ApiException con mensaje claro).
+- ReglasMetas.validarSueno rechaza NaN, igual que el servidor.
+
 ## [Práctica 12] — 2026-11-24
 
 ### Cambiado (optimización, medida antes/después)
