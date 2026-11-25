@@ -127,7 +127,15 @@ class HttpCuentaCorreoService implements CuentaCorreoService {
     } on Exception {
       throw const ApiException('No se pudo conectar con el servicio de inicio de sesión');
     }
-    final dynamic json = r.body.isEmpty ? null : jsonDecode(utf8.decode(r.bodyBytes));
+    // Un portal cautivo o un proxy pueden contestar HTML: sin esta traducción la FormatException se escapaba de las
+    // pantallas que solo atrapan ApiException (hallazgo AUT-01 de las prácticas 13 y 14; el mismo defecto que
+    // WB-HALLAZGO-1 de la Práctica 11 en ApiCliente).
+    dynamic json;
+    try {
+      json = r.bodyBytes.isEmpty ? null : jsonDecode(utf8.decode(r.bodyBytes));
+    } on FormatException {
+      json = null;
+    }
     if (r.statusCode >= 200 && r.statusCode < 300 && json is Map<String, dynamic>) return json;
     throw ApiException(_mensajeDe(json));
   }

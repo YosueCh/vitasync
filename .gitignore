@@ -33,3 +33,8 @@ vitasync-frontend/public/movil/
 .DS_Store
 Thumbs.db
 vitasync-frontend/flutter-mobile-app/evidencias-integracion/celular/
+
+# Salidas del CI local y de GitHub Actions (prácticas 13 y 14)
+aut-flutter.json
+flutter-resultados.json
+ci-local-evidencias/

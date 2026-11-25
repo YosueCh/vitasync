@@ -39,7 +39,8 @@ class ReglasMetas {
   static String? validarCalorias(int? v) =>
       v == null || v < calorias.min || v > calorias.max ? 'Calorías: de ${calorias.min} a ${calorias.max}.' : null;
 
-  static String? validarSueno(double? v) => v == null || v < sueno.min || v > sueno.max
+  // NaN se rechaza explícitamente: toda comparación con NaN es falsa y se colaba como válido (igual que en el servidor).
+  static String? validarSueno(double? v) => v == null || v.isNaN || v < sueno.min || v > sueno.max
       ? 'Sueño: de ${sueno.min.toInt()} a ${sueno.max.toInt()} horas.'
       : null;
 }

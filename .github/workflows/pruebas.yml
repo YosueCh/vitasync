@@ -6,8 +6,10 @@
 # - La prueba de la app en un emulador de Android NO corre aquí: necesita un emulador y es lenta. Se ejecuta a mano
 #   antes de entregar (ver vitasync-frontend/flutter-mobile-app/README.md).
 #
-# Los pasos reproducen los comandos que se ejecutaron en la computadora del proyecto. Este archivo se validó
-# como YAML, pero NO se ha ejecutado todavía en GitHub Actions: la primera corrida puede pedir ajustes.
+# Prácticas 13 y 14 (automatización de pruebas y validación continua): además de las pruebas completas de cada parte hay un
+# trabajo «automatizacion» con la matriz AUT-01…AUT-06 (unitarias, integración y persistencia), cada trabajo publica un RESUMEN
+# (pruebas, aprobadas, fallidas, tiempo) en la página de la ejecución y sube los informes como artefactos descargables.
+# Los mismos pasos se corren en la computadora del proyecto con scripts/ci/ci-local.sh (evidencia en PRACTICAS 13 y 14/).
 name: Pruebas
 
 on:
@@ -21,6 +23,48 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  automatizacion:
+    name: Matriz AUT (prácticas 13 y 14)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+      - name: AUT-03 y AUT-05 (unitarias de la lógica de metas e integración de la API)
+        working-directory: vitasync-backend
+        run: mvn -B test -Dtest='Aut*'
+      - name: Resumen AUT del backend
+        if: always()
+        run: node scripts/ci/resumen-surefire.mjs vitasync-backend/target/surefire-reports "AUT backend (AUT-03 y AUT-05)"
+      - name: SQLite del sistema (lo usa AUT-06)
+        run: sudo apt-get update && sudo apt-get install -y libsqlite3-dev
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.35.7'
+          channel: stable
+          cache: true
+      - name: AUT-01, AUT-02, AUT-04 y AUT-06 (login, reglas, integración app-servidor y persistencia SQLite)
+        working-directory: vitasync-frontend/flutter-mobile-app
+        run: |
+          flutter pub get
+          flutter test test/automatizacion --reporter json > ../../aut-flutter.json
+      - name: Resumen AUT de la app
+        if: always()
+        run: node scripts/ci/resumen-flutter.mjs aut-flutter.json "AUT app (AUT-01, 02, 04 y 06)"
+      - name: Informes AUT
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: informes-aut
+          path: |
+            aut-flutter.json
+            vitasync-backend/target/surefire-reports
+          if-no-files-found: ignore
+
   backend:
     name: Backend (JUnit)
     runs-on: ubuntu-latest
@@ -34,6 +78,16 @@ jobs:
       - name: Pruebas del backend
         working-directory: vitasync-backend
         run: mvn -B test
+      - name: Resumen de pruebas del backend
+        if: always()
+        run: node scripts/ci/resumen-surefire.mjs vitasync-backend/target/surefire-reports "Backend (JUnit)"
+      - name: Informes del backend
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: informes-backend
+          path: vitasync-backend/target/surefire-reports
+          if-no-files-found: ignore
 
   firmware:
     name: Firmware simulado (dart test)
@@ -86,7 +140,19 @@ jobs:
         run: |
           flutter pub get
           flutter analyze
-          flutter test
+          flutter test --coverage --reporter json > ../../flutter-resultados.json
+      - name: Resumen de pruebas de la app
+        if: always()
+        run: node scripts/ci/resumen-flutter.mjs flutter-resultados.json "App móvil (flutter test)"
+      - name: Informes de la app
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: informes-app
+          path: |
+            flutter-resultados.json
+            vitasync-frontend/flutter-mobile-app/coverage/lcov.info
+          if-no-files-found: ignore
 
   seguridad-e2e:
     name: Seguridad de punta a punta (Authentication + Firestore + backend)
