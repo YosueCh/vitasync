@@ -50,6 +50,7 @@ class HttpChatRepository implements ChatRepository {
     await _api.postJson(
       _ruta(pacienteId, 'mensajes'),
       {'emisor': emisor.api, 'texto': texto, if (idCliente != null) 'idCliente': idCliente},
+      idempotente: idCliente != null, // el servidor no repite un idCliente: se puede reintentar sin duplicar
     );
   }
 

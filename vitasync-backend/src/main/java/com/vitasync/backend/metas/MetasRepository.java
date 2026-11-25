@@ -1,10 +1,13 @@
 package com.vitasync.backend.metas;
 
+import com.google.api.gax.rpc.AbortedException;
 import com.google.cloud.firestore.DocumentReference;
 import com.google.cloud.firestore.DocumentSnapshot;
 import com.google.cloud.firestore.Firestore;
+import com.google.cloud.firestore.TransactionOptions;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
@@ -25,6 +28,7 @@ public class MetasRepository {
     private static final String DOCUMENTO = "metas";
 
     private final Firestore db;
+    private final AgrupadorDeEscrituras agrupador = new AgrupadorDeEscrituras(this::escribirLote);
 
     public MetasRepository(Firestore db) {
         this.db = db;
@@ -52,26 +56,35 @@ public class MetasRepository {
      *                        lanza {@link ConflictoDeVersionException} con las metas actuales
      */
     public MetasCuentaDTO actualizar(String cuentaId, Long versionEsperada, UnaryOperator<MetasCuentaDTO> cambio) {
+        // PRÁCTICA 12: las peticiones simultáneas de la misma cuenta se agrupan en una sola transacción.
+        return agrupador.enviar(cuentaId, versionEsperada, cambio);
+    }
+
+    /** Intentos que Firestore hace con una transacción abortada por contención (por omisión solo 5). */
+    static final int INTENTOS_TRANSACCION = 25;
+
+    /** Excepción cuando, tras todos los intentos, Firestore sigue abortando por contención (otro proceso escribe lo mismo). */
+    public static class MetasOcupadasException extends RuntimeException {
+        public MetasOcupadasException(Throwable causa) {
+            super("Hay otra operación en curso con tus metas. Inténtalo de nuevo.", causa);
+        }
+    }
+
+    /** Una transacción con todo el lote: lee una vez, aplica los cambios en orden y escribe una vez. */
+    private List<Object> escribirLote(String cuentaId, List<AgrupadorDeEscrituras.Pedido> lote) throws InterruptedException {
         DocumentReference ref = ref(cuentaId);
         try {
             return db.runTransaction(tx -> {
                 DocumentSnapshot snap = tx.get(ref).get();
                 MetasCuentaDTO actual = snap.exists() ? aDTO(snap) : MetasCuentaDTO.PREDETERMINADAS;
-                if (versionEsperada != null && versionEsperada != actual.version()) {
-                    throw new ConflictoDeVersionException(actual);
-                }
-                MetasCuentaDTO nuevo = cambio.apply(actual).conVersion(actual.version() + 1);
-                tx.set(ref, aMapa(nuevo));
-                return nuevo;
-            }).get();
+                AgrupadorDeEscrituras.Aplicacion ap = AgrupadorDeEscrituras.aplicar(actual, lote);
+                if (ap.documentoFinal() != null) tx.set(ref, aMapa(ap.documentoFinal()));
+                return ap.resultados();
+            }, TransactionOptions.createReadWriteOptionsBuilder().setNumberOfAttempts(INTENTOS_TRANSACCION).build()).get();
         } catch (ExecutionException e) {
-            // La excepción de la transacción llega envuelta: se busca el conflicto en la cadena de causas.
             for (Throwable t = e; t != null; t = t.getCause()) {
-                if (t instanceof ConflictoDeVersionException c) throw c;
+                if (t instanceof AbortedException) throw new MetasOcupadasException(e);
             }
-            throw new IllegalStateException("Error al guardar las metas en Firestore", e);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
             throw new IllegalStateException("Error al guardar las metas en Firestore", e);
         }
     }

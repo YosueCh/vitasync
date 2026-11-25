@@ -52,6 +52,11 @@ public class MetasController {
             return ResponseEntity.ok(accion.get());
         } catch (MetasService.DatoInvalidoException e) {
             return error(HttpStatus.BAD_REQUEST, e.getMessage());
+        } catch (MetasRepository.MetasOcupadasException e) {
+            Map<String, Object> cuerpo = new LinkedHashMap<>();
+            cuerpo.put("error", e.getMessage());
+            cuerpo.put("codigo", "OCUPADO");
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(cuerpo);
         } catch (ConflictoDeVersionException e) {
             Map<String, Object> cuerpo = new LinkedHashMap<>();
             cuerpo.put("error", e.getMessage());

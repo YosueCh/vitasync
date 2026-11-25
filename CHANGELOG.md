@@ -6,6 +6,17 @@ y versionado con [SemVer](https://semver.org/lang/es/) (`MAYOR.MENOR.PARCHE`):
 - **MENOR**: funciones nuevas que no rompen lo existente.
 - **PARCHE**: correcciones de bugs.
 
+## [Práctica 12] — 2026-11-24
+
+### Cambiado (optimización, medida antes/después)
+- Historial de lecturas: caché de 5 s con invalidación al escribir (lectura 1 usuario: 134 → 3 ms).
+- Metas: escrituras simultáneas de una cuenta agrupadas en una sola transacción; contención agotada responde 409 «OCUPADO» en vez de 500 (40 usuarios: 3,7 → 45,5 sol/s, 14,2 % → 0 % de errores).
+- App: SQLite en modo WAL con synchronous NORMAL (22,2 → 11,2 ms por inserción en el emulador).
+- App: reintento con espera progresiva (PoliticaReintento) para lecturas y escrituras idempotentes (chat con idCliente).
+
+### Añadido
+- Pruebas de estrés, base de datos, perfilado y resiliencia (scripts/practica12, test/practica12, integration_test/perfil_p12_test.dart).
+
 ## [Sin publicar] — Desarrollo Móvil Integral: vista móvil e integración de prácticas
 
 ### Cambiado

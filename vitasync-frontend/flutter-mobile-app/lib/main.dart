@@ -10,6 +10,7 @@ import 'screens/seleccionar_cuenta_screen.dart';
 import 'screens/shell_screen.dart';
 import 'widgets/control_inactividad.dart';
 import 'services/api_cliente.dart';
+import 'services/politica_reintento.dart';
 import 'services/auth_service.dart';
 import 'services/cache_salud_repository.dart';
 import 'services/chat_repository.dart';
@@ -61,7 +62,7 @@ class VitaSyncMobileApp extends StatelessWidget {
   }) {
     // Con --dart-define=SEGURIDAD=true (Práctica 10) se pide correo y contraseña y el token viaja en cada petición.
     final correo = cuentaCorreo ?? (ApiConfig.seguridadActiva ? HttpCuentaCorreoService() : null);
-    final cliente = api ?? ApiCliente(token: correo?.token);
+    final cliente = api ?? ApiCliente(token: correo?.token, reintentos: PoliticaReintento.estandar);
     return VitaSyncMobileApp(
       key: key,
       usuarios: HttpUsuarioRepository(api: cliente),

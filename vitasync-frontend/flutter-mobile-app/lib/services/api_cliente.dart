@@ -4,10 +4,11 @@ import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 
 import '../config/api_config.dart';
+import 'politica_reintento.dart';
 
 /// Error de comunicación con el backend, con un mensaje listo para mostrar.
 class ApiException implements Exception {
-  const ApiException(this.mensaje, {this.sinConexion = false, this.codigo, this.datos});
+  const ApiException(this.mensaje, {this.sinConexion = false, this.codigo, this.datos, this.estado});
 
   final String mensaje;
 
@@ -21,6 +22,12 @@ class ApiException implements Exception {
   /// del servidor que rechaza la operación (400, 401, 403, 409…): lo primero se puede reintentar, lo segundo no.
   final bool sinConexion;
 
+  /// Código HTTP de la respuesta que originó el error (null si no hubo respuesta).
+  final int? estado;
+
+  /// true = vale la pena volver a intentar: no se alcanzó al servidor o este contestó 502/504 (puerta de enlace).
+  bool get reintentable => sinConexion || estado == 502 || estado == 504;
+
   @override
   String toString() => mensaje;
 }
@@ -33,21 +40,31 @@ class ApiException implements Exception {
 class ApiCliente {
   /// [token] entrega el ID token de la sesión de correo (Práctica 10); si devuelve un valor, se manda en
   /// «Authorization: Bearer». null = la app corre sin inicio de sesión (el backend con seguridad apagada).
-  ApiCliente({String? baseUrl, http.Client? cliente, Future<String?> Function()? token})
-      : baseUrl = baseUrl ?? ApiConfig.baseUrl,
+  ApiCliente({
+    String? baseUrl,
+    http.Client? cliente,
+    Future<String?> Function()? token,
+    this.reintentos = PoliticaReintento.ninguna,
+    Future<void> Function(Duration)? esperar,
+  })  : baseUrl = baseUrl ?? ApiConfig.baseUrl,
         _cliente = cliente ?? http.Client(),
-        _token = token;
+        _token = token,
+        _esperar = esperar ?? Future<void>.delayed;
 
   final String baseUrl;
   final http.Client _cliente;
   final Future<String?> Function()? _token;
 
+  /// Reintentos con espera progresiva (Práctica 12). Solo para lecturas y escrituras marcadas como idempotentes.
+  final PoliticaReintento reintentos;
+  final Future<void> Function(Duration) _esperar;
+
   Future<dynamic> get(String ruta, [Map<String, String>? query]) =>
-      _enviar((h) => _cliente.get(_uri(ruta, query), headers: h));
+      _enviar((h) => _cliente.get(_uri(ruta, query), headers: h), reintentable: true);
 
   /// GET de un archivo: devuelve los bytes tal cual (sin interpretarlos como JSON).
   Future<Uint8List> getBytes(String ruta, [Map<String, String>? query]) async {
-    final r = await _enviarCrudo((h) => _cliente.get(_uri(ruta, query), headers: h));
+    final r = await _enviarCrudo((h) => _cliente.get(_uri(ruta, query), headers: h), reintentable: true);
     return r.bodyBytes;
   }
 
@@ -58,28 +75,34 @@ class ApiCliente {
       _enviar((h) => _cliente.delete(_uri(ruta, query), headers: h));
 
   /// POST con cuerpo JSON. Se usa para el PIN, que nunca va en la URL.
-  Future<dynamic> postJson(String ruta, Object cuerpo) => _enviar(
+  ///
+  /// [idempotente] = true cuando el cuerpo lleva un identificador que el servidor usa para no repetir la operación
+  /// (p. ej. el idCliente del chat): solo entonces se reintenta automáticamente tras un fallo de red.
+  Future<dynamic> postJson(String ruta, Object cuerpo, {bool idempotente = false}) => _enviar(
         (h) => _cliente.post(
           _uri(ruta, null),
           headers: {...h, 'content-type': 'application/json'},
           body: jsonEncode(cuerpo),
         ),
+        reintentable: idempotente,
       );
 
   /// PUT con cuerpo JSON (cambios con control de versión).
-  Future<dynamic> putJson(String ruta, Object cuerpo) => _enviar(
+  Future<dynamic> putJson(String ruta, Object cuerpo, {bool idempotente = false}) => _enviar(
         (h) => _cliente.put(
           _uri(ruta, null),
           headers: {...h, 'content-type': 'application/json'},
           body: jsonEncode(cuerpo),
         ),
+        reintentable: idempotente,
       );
 
   Uri _uri(String ruta, Map<String, String>? query) =>
       Uri.parse('$baseUrl$ruta').replace(queryParameters: query);
 
-  Future<dynamic> _enviar(Future<http.Response> Function(Map<String, String> cabeceras) peticion) async {
-    final respuesta = await _enviarCrudo(peticion);
+  Future<dynamic> _enviar(Future<http.Response> Function(Map<String, String> cabeceras) peticion,
+      {bool reintentable = false}) async {
+    final respuesta = await _enviarCrudo(peticion, reintentable: reintentable);
     if (respuesta.body.isEmpty) return null;
     try {
       return jsonDecode(utf8.decode(respuesta.bodyBytes));
@@ -90,8 +113,22 @@ class ApiCliente {
     }
   }
 
-  /// Envía la petición y traduce los fallos a [ApiException]; devuelve la respuesta ya exitosa.
-  Future<http.Response> _enviarCrudo(Future<http.Response> Function(Map<String, String> cabeceras) peticion) async {
+  /// Envía la petición (con reintento y espera progresiva si es seguro repetirla) y devuelve la respuesta exitosa.
+  Future<http.Response> _enviarCrudo(Future<http.Response> Function(Map<String, String> cabeceras) peticion,
+      {bool reintentable = false}) async {
+    for (var intento = 0;; intento++) {
+      try {
+        return await _enviarUnaVez(peticion);
+      } on ApiException catch (e) {
+        final reintentar = reintentable && e.reintentable && intento < reintentos.maxReintentos;
+        if (!reintentar) rethrow;
+        await _esperar(reintentos.espera(intento));
+      }
+    }
+  }
+
+  /// Un solo intento: traduce los fallos a [ApiException].
+  Future<http.Response> _enviarUnaVez(Future<http.Response> Function(Map<String, String> cabeceras) peticion) async {
     final http.Response respuesta;
     try {
       final token = await _token?.call();
@@ -123,7 +160,7 @@ class ApiCliente {
       }
     }
     if (respuesta.statusCode < 200 || respuesta.statusCode >= 300) {
-      throw ApiException('El servidor respondió ${respuesta.statusCode}');
+      throw ApiException('El servidor respondió ${respuesta.statusCode}', estado: respuesta.statusCode);
     }
     return respuesta;
   }

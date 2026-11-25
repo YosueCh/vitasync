@@ -33,6 +33,7 @@ class MetricaDaoSqlite implements MetricaDao {
       destino,
       options: OpenDatabaseOptions(
         version: versionEsquema,
+        onConfigure: _configurarRendimiento,
         onCreate: (db, _) async {
           await db.execute('''
             CREATE TABLE metricas (
@@ -56,6 +57,25 @@ class MetricaDaoSqlite implements MetricaDao {
       ),
     );
     return MetricaDaoSqlite(db);
+  }
+
+  /// PRÁCTICA 12 · PER-11: cada [insertar] es una transacción y, con el modo por omisión (diario de reversión +
+  /// sincronización completa), cada confirmación espera a que el disco termine de escribir: ≈34 ms por inserción medidos
+  /// en el emulador de Android. Con el diario WAL y sincronización «normal» el commit solo agrega al diario y el disco se
+  /// sincroniza en los puntos de control. Es una caché que se vuelve a llenar sola, así que perder la última escritura
+  /// ante un corte de energía es aceptable (la base NO se corrompe con WAL + NORMAL). Si el motor no lo admite (memoria,
+  /// web) se ignora y todo sigue funcionando como antes.
+  /// --dart-define=SQLITE_WAL=false lo apaga (sirve para comparar antes/después con el mismo código).
+  static const bool _usarWal = bool.fromEnvironment('SQLITE_WAL', defaultValue: true);
+
+  static Future<void> _configurarRendimiento(Database db) async {
+    if (!_usarWal) return;
+    try {
+      await db.rawQuery('PRAGMA journal_mode=WAL');
+      await db.execute('PRAGMA synchronous=NORMAL');
+    } on Object {
+      // Sin WAL: se conserva el comportamiento anterior.
+    }
   }
 
   Future<void> cerrar() => _db.close();

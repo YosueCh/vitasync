@@ -32,11 +32,34 @@ public class SmartwatchService implements com.vitasync.backend.usuarios.service.
     // Caché de la última lectura, una por usuario (no un solo dato global).
     private final Map<String, MetricasDTO> metricasPorUsuario = new ConcurrentHashMap<>();
 
+    // PRÁCTICA 12 (PER-11): caché del historial de lecturas. Las apps consultan el mismo historial una y otra vez
+    // (sondeo de la pantalla, varias cards) y cada consulta cuesta una ida y vuelta a Firestore (≈90 ms y N lecturas
+    // facturadas). La caché guarda el resultado unos segundos y se INVALIDA al guardar una lectura nueva o borrar la
+    // cuenta, así que el usuario nunca ve un historial que ya se sabe viejo desde este servidor.
+    static final int MAX_ENTRADAS_CACHE = 500;
+    private final long vigenciaCacheMs;
+    private record EntradaHistorial(List<MetricasDTO> datos, long expiraEnMs) {}
+    private final Map<String, EntradaHistorial> cacheHistorial = new ConcurrentHashMap<>();
+    // Se incrementa en cada invalidación: una consulta que empezó ANTES de una escritura no puede guardar su resultado viejo.
+    private final java.util.concurrent.atomic.AtomicLong generacion = new java.util.concurrent.atomic.AtomicLong();
+
+    /**
+     * @param vigenciaCacheMs milisegundos que se reutiliza una consulta del historial; 0 apaga la caché
+     *                        ({@code vitasync.cache-historial.vigencia-ms}, por omisión 5000).
+     */
     @Autowired
     public SmartwatchService(Optional<DispositivoRepository> repo,
-                             Optional<HistorialMetricasRepository> historial) {
+                             Optional<HistorialMetricasRepository> historial,
+                             @org.springframework.beans.factory.annotation.Value("${vitasync.cache-historial.vigencia-ms:5000}") long vigenciaCacheMs) {
         this.repo = repo;
         this.historial = historial;
+        this.vigenciaCacheMs = Math.max(0, vigenciaCacheMs);
+    }
+
+    /** Sin caché (comportamiento anterior a la Práctica 12). */
+    public SmartwatchService(Optional<DispositivoRepository> repo,
+                             Optional<HistorialMetricasRepository> historial) {
+        this(repo, historial, 0);
     }
 
     /** Sin historial en base de datos (solo la última lectura en memoria). */
@@ -53,6 +76,7 @@ public class SmartwatchService implements com.vitasync.backend.usuarios.service.
     @Override
     public void borrarDatosDe(String usuarioId) {
         metricasPorUsuario.remove(usuarioId);
+        invalidarCacheDe(usuarioId);
         repo.ifPresent(r -> r.eliminar(usuarioId));
         historial.ifPresent(h -> h.eliminarTodo(usuarioId));
     }
@@ -166,7 +190,27 @@ public class SmartwatchService implements com.vitasync.backend.usuarios.service.
     }
 
     private List<MetricasDTO> consultarHistorial(String usuarioId, int limite) {
-        return historial.map(h -> h.ultimas(usuarioId, limite)).orElse(List.of());
+        if (historial.isEmpty()) return List.of();
+        if (vigenciaCacheMs == 0) return historial.get().ultimas(usuarioId, limite);
+
+        String clave = usuarioId + "|" + limite;
+        long ahora = System.currentTimeMillis();
+        EntradaHistorial guardada = cacheHistorial.get(clave);
+        if (guardada != null && guardada.expiraEnMs() > ahora) return guardada.datos();
+
+        long generacionAlEmpezar = generacion.get();
+        List<MetricasDTO> datos = historial.get().ultimas(usuarioId, limite);
+        if (generacion.get() == generacionAlEmpezar) {
+            if (cacheHistorial.size() >= MAX_ENTRADAS_CACHE) cacheHistorial.clear(); // tope de memoria
+            cacheHistorial.put(clave, new EntradaHistorial(datos, ahora + vigenciaCacheMs));
+        }
+        return datos;
+    }
+
+    private void invalidarCacheDe(String usuarioId) {
+        generacion.incrementAndGet();
+        String prefijo = usuarioId + "|";
+        cacheHistorial.keySet().removeIf(k -> k.startsWith(prefijo));
     }
 
     /** Un fallo al guardar el historial no debe impedir la sincronización del reloj. */
@@ -176,6 +220,8 @@ public class SmartwatchService implements com.vitasync.backend.usuarios.service.
                 h.guardar(usuarioId, m);
             } catch (RuntimeException e) {
                 log.warn("No se pudo guardar la lectura en el historial: {}", e.getMessage());
+            } finally {
+                invalidarCacheDe(usuarioId); // la lectura nueva debe verse en la siguiente consulta
             }
         });
     }
