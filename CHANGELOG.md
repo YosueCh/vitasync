@@ -15,6 +15,7 @@ y versionado con [SemVer](https://semver.org/lang/es/) (`MAYOR.MENOR.PARCHE`):
 - Prueba de extremo a extremo reloj → backend → app móvil (firmware simulado real; lectura nueva visible en 27 ms).
 
 ### Corregido
+- PWA sin conexión (rúbrica C3): el service worker que genera Flutter 3.35 ya no guarda la app, así que la vista móvil no abría sin red. Ahora usa sw-vitasync.js (cascarón + caché de estáticos y tipografías; la API y Firebase nunca se guardan) y un arranque propio. Verificado con Chrome: tras una visita en línea, la app abre con la red cortada (scripts/entrega-final/verificar-offline.mjs).
 - RolesScreen: la fila del selector de rol y «Generar código» ya no se desborda en pantallas angostas.
 
 ## [Prácticas 13 y 14] — 2026-11-24
