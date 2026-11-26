@@ -6,6 +6,17 @@ y versionado con [SemVer](https://semver.org/lang/es/) (`MAYOR.MENOR.PARCHE`):
 - **MENOR**: funciones nuevas que no rompen lo existente.
 - **PARCHE**: correcciones de bugs.
 
+## [Entrega final] — 2026-11-25
+
+### Añadido
+- Práctica 7 (cierre): enlace de invitación (vitasync://invitacion?codigo=… en Android y /movil/#/invitacion?codigo=… en la web) que abre la app con el código escrito; botón «Copiar enlace» en Roles. 12 pruebas.
+- Parcial 3 de la propuesta: la vista móvil se sirve en /movil/ como PWA instalable (íconos y manifiesto de VitaSync), el sitio Angular manda los teléfonos a /movil/ (?escritorio=1 muestra el sitio completo) y hay un enlace en el pie. 6 pruebas de Angular.
+- scripts/entrega-final: construir-movil.sh, verificar-pwa.mjs, capturas-pantallas.mjs, e2e-tres-superficies.mjs y generar-iconos.mjs. El CI compila la vista móvil.
+- Prueba de extremo a extremo reloj → backend → app móvil (firmware simulado real; lectura nueva visible en 27 ms).
+
+### Corregido
+- RolesScreen: la fila del selector de rol y «Generar código» ya no se desborda en pantallas angostas.
+
 ## [Prácticas 13 y 14] — 2026-11-24
 
 ### Añadido

@@ -141,6 +141,9 @@ jobs:
           flutter pub get
           flutter analyze
           flutter test --coverage --reporter json > ../../flutter-resultados.json
+      - name: Compilación de la vista móvil (Flutter Web / PWA en /movil/)
+        working-directory: vitasync-frontend/flutter-mobile-app
+        run: flutter build web --release --base-href /movil/
       - name: Resumen de pruebas de la app
         if: always()
         run: node scripts/ci/resumen-flutter.mjs flutter-resultados.json "App móvil (flutter test)"

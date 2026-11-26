@@ -1,3 +1,5 @@
+import 'dart:ui' show PlatformDispatcher;
+
 import 'package:flutter/material.dart';
 
 import 'config/api_config.dart';
@@ -15,6 +17,7 @@ import 'services/auth_service.dart';
 import 'services/cache_salud_repository.dart';
 import 'services/chat_repository.dart';
 import 'services/contactos_repository.dart';
+import 'services/enlace_invitacion.dart';
 import 'services/metas_repository.dart';
 import 'services/roles_repository.dart';
 import 'services/cuenta_correo_service.dart';
@@ -29,10 +32,13 @@ const _modoMuestra = bool.fromEnvironment('MUESTRA');
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // Práctica 7: si la app se abrió desde un enlace de invitación (vitasync://invitacion?codigo=… o …/movil/#/invitacion?codigo=…),
+  // Flutter lo entrega como la «ruta inicial»; se guarda hasta que la persona entre.
+  final invitacion = InvitacionPendiente()..recibir(PlatformDispatcher.instance.defaultRouteName);
   if (_modoMuestra) {
-    runApp(VitaSyncMobileApp.muestra());
+    runApp(VitaSyncMobileApp.muestra(invitacion: invitacion));
   } else {
-    runApp(VitaSyncMobileApp.real(dao: await abrirDaoLocal()));
+    runApp(VitaSyncMobileApp.real(dao: await abrirDaoLocal(), invitacion: invitacion));
   }
 }
 
@@ -51,6 +57,7 @@ class VitaSyncMobileApp extends StatelessWidget {
     this.contactosPara,
     this.metasDe,
     this.roles,
+    this.invitacion,
   });
 
   /// Conectada al backend: HTTP real, caché local y sondeo cada 3 s.
@@ -59,6 +66,7 @@ class VitaSyncMobileApp extends StatelessWidget {
     required MetricaDao dao,
     ApiCliente? api,
     CuentaCorreoService? cuentaCorreo,
+    InvitacionPendiente? invitacion,
   }) {
     // Con --dart-define=SEGURIDAD=true (Práctica 10) se pide correo y contraseña y el token viaja en cada petición.
     final correo = cuentaCorreo ?? (ApiConfig.seguridadActiva ? HttpCuentaCorreoService() : null);
@@ -82,11 +90,12 @@ class VitaSyncMobileApp extends StatelessWidget {
       metasDe: (cuentaId, {bool medico = false}) => HttpMetasRepository(usuarioId: cuentaId, api: cliente),
       // La pestaña de roles solo existe con la seguridad activa: sin sesiones no hay roles que repartir.
       roles: correo != null ? HttpRolesRepository(api: cliente) : null,
+      invitacion: invitacion,
     );
   }
 
   /// Datos de ejemplo, sin red ni sondeo.
-  factory VitaSyncMobileApp.muestra({Key? key}) {
+  factory VitaSyncMobileApp.muestra({Key? key, InvitacionPendiente? invitacion}) {
     final metas = AlmacenMetasMuestra();
     return VitaSyncMobileApp(
       metasDe: (cuentaId, {bool medico = false}) =>
@@ -96,6 +105,7 @@ class VitaSyncMobileApp extends StatelessWidget {
       saludPara: (_) => const MuestraSaludRepository(),
       firmwarePara: (_) => MuestraFirmwareRepository(),
       contactosPara: (_) => MuestraContactosRepository(),
+      invitacion: invitacion,
     );
   }
 
@@ -128,6 +138,9 @@ class VitaSyncMobileApp extends StatelessWidget {
   /// Asignación de roles por el administrador (Práctica 7). null = la app no muestra esa pestaña.
   final RolesRepository? roles;
 
+  /// Código de invitación recibido por un enlace (Práctica 7). null = la app no atiende enlaces.
+  final InvitacionPendiente? invitacion;
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -141,6 +154,8 @@ class VitaSyncMobileApp extends StatelessWidget {
           child: child,
         ),
       ),
+      // Se fija la ruta inicial para que el enlace de invitación no se interprete como una pantalla desconocida.
+      initialRoute: '/',
       home: _PuertaDeAcceso(app: this),
     );
   }
@@ -157,7 +172,7 @@ class _PuertaDeAcceso extends StatefulWidget {
   State<_PuertaDeAcceso> createState() => _PuertaDeAccesoState();
 }
 
-class _PuertaDeAccesoState extends State<_PuertaDeAcceso> {
+class _PuertaDeAccesoState extends State<_PuertaDeAcceso> with WidgetsBindingObserver {
   late final AuthService _auth = widget.app.auth ?? MuestraAuthService();
   Usuario? _cuenta;
   // Se crean una vez al elegir la cuenta, no en cada build.
@@ -166,6 +181,27 @@ class _PuertaDeAccesoState extends State<_PuertaDeAcceso> {
   ContactosRepository? _contactos;
   // Una sola instancia: en muestra, médico y paciente comparten la misma memoria.
   late final ChatRepository _chat = widget.app.chat ?? MuestraChatRepository();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  /// Enlace que llega con la app ya abierta (arranque en caliente). true = es de invitación y ya se atendió.
+  @override
+  Future<bool> didPushRouteInformation(RouteInformation informacion) async {
+    final invitacion = widget.app.invitacion;
+    if (invitacion == null || EnlaceInvitacion.codigoDe(informacion.uri.toString()) == null) return false;
+    invitacion.recibir(informacion.uri.toString());
+    return true;
+  }
 
   void _elegir(Usuario u) {
     _salud = widget.app.saludPara(u);
@@ -231,6 +267,7 @@ class _PuertaDeAccesoState extends State<_PuertaDeAcceso> {
         contactos: _contactos,
         metasDe: app.metasDe,
         roles: app.roles,
+        invitacion: app.invitacion,
         usuarios: app.usuarios,
         intervaloSondeo: app.intervaloSondeo,
         intervaloChat: app.intervaloChat,

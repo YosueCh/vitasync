@@ -1,6 +1,9 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../services/api_cliente.dart';
+import '../services/enlace_invitacion.dart';
 import '../services/roles_repository.dart';
 
 /// Asignación masiva de roles por el administrador (Práctica 7 dentro de VitaSync). Los cambios se marcan como
@@ -60,6 +63,14 @@ class _RolesScreenState extends State<RolesScreen> {
       }
       _aviso = null;
     });
+  }
+
+  /// Práctica 7: el enlace abre la app (o la vista web) con el código ya escrito. En el navegador se arma con la dirección
+  /// del sitio; en el teléfono, con el esquema propio de la app.
+  Future<void> _copiarEnlace(String codigo) async {
+    final enlace = kIsWeb ? EnlaceInvitacion.paraWeb(Uri.base.origin, codigo) : EnlaceInvitacion.paraApp(codigo);
+    await Clipboard.setData(ClipboardData(text: enlace));
+    if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Enlace copiado: $enlace')));
   }
 
   Future<void> _crearInvitacion() async {
@@ -154,7 +165,8 @@ class _RolesScreenState extends State<RolesScreen> {
                     children: [
                       Text('Invitaciones de un solo uso', style: Theme.of(context).textTheme.titleSmall),
                       const SizedBox(height: 4),
-                      Row(children: [
+                      // Wrap y no Row: en pantallas angostas (o con letra grande) el botón baja a la línea siguiente en vez de desbordarse.
+                      Wrap(crossAxisAlignment: WrapCrossAlignment.center, spacing: 12, children: [
                         DropdownButton<String>(
                           key: const Key('rol-invitacion'),
                           value: _rolInvitacion,
@@ -163,7 +175,6 @@ class _RolesScreenState extends State<RolesScreen> {
                           ],
                           onChanged: (r) => setState(() => _rolInvitacion = r ?? _rolInvitacion),
                         ),
-                        const SizedBox(width: 12),
                         FilledButton.tonal(
                           key: const Key('crear-invitacion'),
                           onPressed: _crearInvitacion,
@@ -171,8 +182,19 @@ class _RolesScreenState extends State<RolesScreen> {
                         ),
                       ]),
                       for (final i in _invitaciones)
-                        Text('${i.codigo} · ${rolesAsignables[i.rol] ?? i.rol} · ${i.usada ? 'usado' : 'libre'}',
-                            key: Key('invitacion-${i.codigo}')),
+                        Row(children: [
+                          Expanded(
+                            child: Text('${i.codigo} · ${rolesAsignables[i.rol] ?? i.rol} · ${i.usada ? 'usado' : 'libre'}',
+                                key: Key('invitacion-${i.codigo}')),
+                          ),
+                          if (!i.usada)
+                            IconButton(
+                              key: Key('copiar-enlace-${i.codigo}'),
+                              tooltip: 'Copiar enlace de invitación',
+                              icon: const Icon(Icons.link),
+                              onPressed: () => _copiarEnlace(i.codigo),
+                            ),
+                        ]),
                     ],
                   ),
                 ),

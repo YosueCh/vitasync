@@ -4,6 +4,7 @@ import '../models/usuario.dart';
 import '../services/api_cliente.dart';
 import '../services/chat_repository.dart';
 import '../services/contactos_repository.dart';
+import '../services/enlace_invitacion.dart';
 import '../services/firmware_repository.dart';
 import '../services/metas_repository.dart';
 import '../services/roles_repository.dart';
@@ -31,6 +32,7 @@ class ShellScreen extends StatefulWidget {
     this.contactos,
     this.metasDe,
     this.roles,
+    this.invitacion,
   });
 
   final Usuario cuenta;
@@ -55,6 +57,9 @@ class ShellScreen extends StatefulWidget {
   /// Cada cuánto el chat pide mensajes nuevos. null desactiva el sondeo.
   final Duration? intervaloChat;
 
+  /// Código de invitación que llegó por un enlace (Práctica 7): al entrar se abre el canje con el código ya escrito.
+  final InvitacionPendiente? invitacion;
+
   @override
   State<ShellScreen> createState() => _ShellScreenState();
 }
@@ -62,10 +67,30 @@ class ShellScreen extends StatefulWidget {
 class _ShellScreenState extends State<ShellScreen> {
   int _indice = 0;
 
+  @override
+  void initState() {
+    super.initState();
+    widget.invitacion?.addListener(_alLlegarInvitacion);
+    // Un enlace que llegó antes de entrar (arranque en frío): se atiende al terminar el primer cuadro.
+    WidgetsBinding.instance.addPostFrameCallback((_) => _alLlegarInvitacion());
+  }
+
+  @override
+  void dispose() {
+    widget.invitacion?.removeListener(_alLlegarInvitacion);
+    super.dispose();
+  }
+
+  void _alLlegarInvitacion() {
+    if (!mounted || widget.roles == null) return;
+    final codigo = widget.invitacion?.consumir();
+    if (codigo != null) _canjearCodigo(prellenado: codigo);
+  }
+
   /// Canjea un código de invitación: el servidor cambia el rol de la persona; lo adopta al renovar su sesión.
-  Future<void> _canjearCodigo() async {
+  Future<void> _canjearCodigo({String? prellenado}) async {
     // No se libera a mano: el diálogo sigue en pantalla unos instantes al cerrarse y usaría un controlador ya liberado.
-    final controlador = TextEditingController();
+    final controlador = TextEditingController(text: prellenado);
     final codigo = await showDialog<String>(
       context: context,
       builder: (_) => AlertDialog(
