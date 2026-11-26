@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 
 import '../auth/usuario_activo.dart';
 import '../models/metricas.dart';
+import '../services/sensores_reloj.dart';
 import '../services/smartwatch_api_service.dart';
+import 'configuracion_screen.dart';
 import '../widgets/vitasync_wear_widget.dart';
 
 const _intervaloSondeo = Duration(seconds: 3);
@@ -32,26 +34,33 @@ const _metaPasos = 10000;
 /// pantalla "Configuración de Dispositivo" del sitio web, así que
 /// sincronizar desde el reloj o desde la web actualiza el mismo dato.
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key, required this.onLogout});
+  const HomeScreen({super.key, required this.onLogout, this.api});
 
   final VoidCallback onLogout;
+
+  /// Servicio del reloj; las pruebas pasan uno con sensores y servidor falsos.
+  final SmartwatchApiService? api;
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final _api = SmartwatchApiService();
+  late final SmartwatchApiService _api = widget.api ?? SmartwatchApiService();
 
   Metricas _metricas = _metricasEjemplo;
   bool _conectado = false;
   bool _sincronizando = false;
   Timer? _sondeo;
 
+  /// Sensores del reloj y permisos (rúbrica D2/D4). null = todavía no se consulta.
+  EstadoSensores? _sensores;
+
   @override
   void initState() {
     super.initState();
     _cargarMetricas();
+    _cargarSensores();
     // Si se sincroniza desde la web mientras esta pantalla está abierta,
     // el dato nuevo aparece solo en unos segundos, sin reabrir la app.
     _sondeo = Timer.periodic(_intervaloSondeo, (_) => _sondear());
@@ -61,6 +70,33 @@ class _HomeScreenState extends State<HomeScreen> {
   void dispose() {
     _sondeo?.cancel();
     super.dispose();
+  }
+
+  Future<void> _cargarSensores() async {
+    final e = await _api.sensores.estado();
+    if (mounted) setState(() => _sensores = e);
+  }
+
+  /// Muestra el diálogo de permisos del sistema; si se rechaza, la app sigue funcionando con valores simulados.
+  Future<void> _pedirPermisos() async {
+    final e = await _api.sensores.pedirPermisos();
+    if (mounted) setState(() => _sensores = e);
+  }
+
+  Future<void> _abrirConfiguracion() async {
+    await Navigator.push(context, MaterialPageRoute<bool>(builder: (_) => ConfiguracionScreen(api: _api)));
+    _cargarMetricas();
+  }
+
+  /// Una línea que dice, sin ambigüedad, de dónde salen los números.
+  String _textoFuente() {
+    final e = _sensores;
+    if (e == null) return '';
+    if (!e.hayAlgunSensor) return 'Este reloj no tiene sensores compatibles: valores simulados';
+    if (e.faltaPermiso) return 'Permite los sensores para medir tu ritmo cardíaco y pasos';
+    final l = _api.ultimaLectura;
+    if (l == null) return 'Sensores del reloj activos';
+    return l.hayReales ? 'Medido: ${l.reales.join(", ")}. Simulado: ${l.simuladas.join(", ")}' : 'Valores simulados';
   }
 
   Future<void> _cargarMetricas() async {
@@ -88,7 +124,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _sincronizar() async {
     setState(() => _sincronizando = true);
-    final m = await _api.sincronizar();
+    final m = await _api.sincronizar(ultimoSueno: _metricas.suenoHoras);
+    await _cargarSensores();
     if (!mounted) return;
     setState(() {
       _sincronizando = false;
@@ -120,10 +157,20 @@ class _HomeScreenState extends State<HomeScreen> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  const Icon(
-                    Icons.verified_user,
-                    color: Colors.tealAccent,
-                    size: 16,
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.verified_user, color: Colors.tealAccent, size: 16),
+                      IconButton(
+                        key: const Key('abrir-config'),
+                        onPressed: _abrirConfiguracion,
+                        icon: const Icon(Icons.settings, size: 12),
+                        tooltip: 'Servidor y clave',
+                        visualDensity: VisualDensity.compact,
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(minWidth: 24, minHeight: 24),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 4),
                   const Text(
@@ -151,12 +198,28 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    _conectado ? 'Backend conectado' : 'Sin conexión (datos de ejemplo)',
+                    _conectado ? 'Backend conectado' : (_api.ultimoError ?? 'Sin conexión (datos de ejemplo)'),
+                    textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 8,
                       color: _conectado ? Colors.tealAccent : Colors.white38,
                     ),
                   ),
+                  if (_textoFuente().isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 3),
+                      child: Text(_textoFuente(), key: const Key('fuente-datos'), textAlign: TextAlign.center, style: const TextStyle(fontSize: 7, color: Colors.white54)),
+                    ),
+                  if (_sensores?.faltaPermiso ?? false)
+                    SizedBox(
+                      height: 22,
+                      child: TextButton.icon(
+                        key: const Key('permitir-sensores'),
+                        onPressed: _pedirPermisos,
+                        icon: const Icon(Icons.favorite, size: 10),
+                        label: const Text('Permitir sensores', style: TextStyle(fontSize: 8)),
+                      ),
+                    ),
                   const SizedBox(height: 6),
                   SizedBox(
                     height: 24,

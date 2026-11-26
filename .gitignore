@@ -42,3 +42,5 @@ vitasync-frontend/flutter-mobile-app/evidencias-integracion/
 
 # Vista móvil compilada (Parcial 3 de la propuesta): se genera con scripts/entrega-final/construir-movil.sh
 vitasync-frontend/public/movil/
+
+vitasync_wear/build/

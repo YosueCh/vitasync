@@ -1,8 +1,20 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Rúbrica D: red, sensores y su permiso. -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.BODY_SENSORS"/>
+    <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION"/>
+    <uses-permission android:name="android.permission.health.READ_HEART_RATE"/>
+    <!-- Es una app de reloj, y funciona sola (no necesita el teléfono). Los sensores son opcionales: si faltan se usan valores simulados. -->
+    <uses-feature android:name="android.hardware.sensor.heartrate" android:required="false"/>
+    <uses-feature android:name="android.hardware.sensor.stepcounter" android:required="false"/>
+
     <application
         android:label="smartwatch_auth"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        android:usesCleartextTraffic="true">
+        <!-- HTTP sin cifrar SOLO por la red local de pruebas (el backend de desarrollo no tiene HTTPS). En producción: HTTPS y quitar esto. -->
+        <meta-data android:name="com.google.android.wearable.standalone" android:value="true"/>
         <activity
             android:name=".MainActivity"
             android:exported="true"

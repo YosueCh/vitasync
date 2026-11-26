@@ -157,6 +157,23 @@ jobs:
             vitasync-frontend/flutter-mobile-app/coverage/lcov.info
           if-no-files-found: ignore
 
+  reloj:
+    name: "App del reloj (Wear OS, flutter analyze y test)"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.35.7'
+          channel: stable
+          cache: true
+      - name: Análisis y pruebas del reloj (sensores, permisos, servidor configurable)
+        working-directory: vitasync_wear
+        run: |
+          flutter pub get
+          flutter analyze
+          flutter test
+
   seguridad-e2e:
     name: Seguridad de punta a punta (Authentication + Firestore + backend)
     needs: backend

@@ -6,6 +6,18 @@ y versionado con [SemVer](https://semver.org/lang/es/) (`MAYOR.MENOR.PARCHE`):
 - **MENOR**: funciones nuevas que no rompen lo existente.
 - **PARCHE**: correcciones de bugs.
 
+## [Reloj físico / Wear OS] — 2026-11-25
+
+### Añadido
+- vitasync_wear lee SENSORES REALES de Android (ritmo cardíaco, contador de pasos, batería) por un canal nativo, con diálogo de permisos del sistema y respaldo simulado, indicando en pantalla qué es medido y qué simulado (rúbrica D2/D4).
+- Servidor y clave de dispositivo configurables en el reloj (⚙); la app manda X-Clave-Dispositivo (con la seguridad encendida antes recibía 401) y ya no depende de 10.0.2.2, así que sirve para un reloj físico.
+- Manifiesto: INTERNET, BODY_SENSORS / READ_HEART_RATE, ACTIVITY_RECOGNITION y tráfico HTTP solo para la red local de pruebas.
+- Pantalla de diagnóstico de sensores (lib/diagnostico_sensores.dart) y README con la instalación en un reloj físico. 22 pruebas; el CI las ejecuta.
+- Verificado en el emulador Wear OS: permisos reales del sistema, lectura de 81 lpm con el sensor virtual y envío al backend (90 lpm visible en /api/smartwatch/metrics).
+
+### Corregido
+- widget_test.dart del reloj ya no se quedaba esperando al almacén seguro (fallaba antes de este cambio).
+
 ## [Entrega final] — 2026-11-25
 
 ### Añadido
